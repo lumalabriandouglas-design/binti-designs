@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Binti Designs">
+  <rect width="32" height="32" rx="6" fill="#161412"/>
+  <rect x="5" y="7" width="4" height="18" fill="#F4EEE6"/>
+  <rect x="7" y="7" width="9.2" height="8.2" rx="4.1" fill="#F4EEE6"/>
+  <rect x="10.2" y="9.5" width="4.2" height="3.5" rx="1.75" fill="#161412"/>
+  <rect x="7" y="16.6" width="10.2" height="8.4" rx="4.2" fill="#F4EEE6"/>
+  <rect x="10.2" y="19" width="5.2" height="3.6" rx="1.8" fill="#161412"/>
+  <rect x="17.6" y="7" width="4" height="18" fill="#F4EEE6"/>
+  <rect x="19.4" y="7" width="8.4" height="18" rx="4.2" fill="#F4EEE6"/>
+  <path fill="#161412" d="M22.2 10.6h1.15c2.15 0 3.35 2.15 3.35 5.4s-1.2 5.4-3.35 5.4H22.2z"/>
+</svg>

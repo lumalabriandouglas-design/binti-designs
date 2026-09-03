@@ -1,6 +1,5 @@
-export const HOUSE_EMAIL = "bintidesigns442@gmail.com";
+import { HOUSE_EMAIL } from "@/lib/firebase/firebase";
 
-export function isHouseAccount(email?: string | null, adminEmail?: string | null) {
-  const allowed = (adminEmail || HOUSE_EMAIL).trim().toLowerCase();
-  return Boolean(email && email.trim().toLowerCase() === allowed);
+export function isHouseAccount(email?: string | null, _adminEmail?: string | null) {
+  return Boolean(email && email.trim().toLowerCase() === HOUSE_EMAIL);
 }

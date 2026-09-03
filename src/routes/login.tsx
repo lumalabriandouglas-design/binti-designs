@@ -26,7 +26,7 @@ function Login() {
   useEffect(() => {
     if (isPending || !user) return;
     const house = isHouseAccount(user.primaryEmail, catalog.data?.settings?.admin_email);
-    void nav({ to: house ? "/studio" : "/account" });
+    void nav({ to: house ? "/atelier-studio" : "/account" });
   }, [user, isPending, catalog.data?.settings?.admin_email, nav]);
 
   async function finish() {
@@ -35,7 +35,7 @@ function Login() {
       email || user?.primaryEmail,
       snapshot.settings?.admin_email,
     );
-    await nav({ to: house ? "/studio" : "/account" });
+    await nav({ to: house ? "/atelier-studio" : "/account" });
   }
 
   async function onEmail(e: React.FormEvent) {

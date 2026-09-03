@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AtelierRouteImport } from './routes/atelier'
+import { Route as AtelierStudioRouteImport } from './routes/atelier-studio'
 import { Route as BagRouteImport } from './routes/bag'
 import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as JournalRouteImport } from './routes/journal'
@@ -35,6 +36,11 @@ const AccountRoute = AccountRouteImport.update({
 const AtelierRoute = AtelierRouteImport.update({
   id: '/atelier',
   path: '/atelier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtelierStudioRoute = AtelierStudioRouteImport.update({
+  id: '/atelier-studio',
+  path: '/atelier-studio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BagRoute = BagRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/atelier': typeof AtelierRoute
+  '/atelier-studio': typeof AtelierStudioRoute
   '/bag': typeof BagRoute
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/atelier': typeof AtelierRoute
+  '/atelier-studio': typeof AtelierStudioRoute
   '/bag': typeof BagRoute
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/atelier': typeof AtelierRoute
+  '/atelier-studio': typeof AtelierStudioRoute
   '/bag': typeof BagRoute
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/atelier'
+    | '/atelier-studio'
     | '/bag'
     | '/collection'
     | '/journal'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/atelier'
+    | '/atelier-studio'
     | '/bag'
     | '/collection'
     | '/journal'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/atelier'
+    | '/atelier-studio'
     | '/bag'
     | '/collection'
     | '/journal'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   AtelierRoute: typeof AtelierRoute
+  AtelierStudioRoute: typeof AtelierStudioRoute
   BagRoute: typeof BagRoute
   CollectionRoute: typeof CollectionRoute
   JournalRoute: typeof JournalRoute
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/atelier'
       fullPath: '/atelier'
       preLoaderRoute: typeof AtelierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atelier-studio': {
+      id: '/atelier-studio'
+      path: '/atelier-studio'
+      fullPath: '/atelier-studio'
+      preLoaderRoute: typeof AtelierStudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bag': {
@@ -290,6 +310,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   AtelierRoute: AtelierRoute,
+  AtelierStudioRoute: AtelierStudioRoute,
   BagRoute: BagRoute,
   CollectionRoute: CollectionRoute,
   JournalRoute: JournalRoute,

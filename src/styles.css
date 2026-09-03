@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Cormorant Garamond", "Times New Roman", serif;
-  --font-sans: "Outfit", "Segoe UI", sans-serif;
-  --color-paper: #f3eee6;
-  --color-paper-2: #e8e0d4;
-  --color-ink: #0c0b0a;
-  --color-ink-soft: #2a2622;
-  --color-mute: #746b61;
-  --color-line: #d5cdc2;
-  --color-gold: #9a8660;
+  --font-display: "Playfair Display", "Times New Roman", serif;
+  --font-sans: "Inter", "Helvetica Neue", sans-serif;
+  --color-paper: #f7f4ef;
+  --color-paper-2: #efe8dc;
+  --color-ink: #090909;
+  --color-ink-soft: #1a1a1a;
+  --color-mute: #7a736a;
+  --color-line: #ddd6cb;
+  --color-gold: #c4b08a;
   --color-banana: #f0d24b;
   --color-minion: #2b3a8f;
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
 }
 
 @layer base {
   html {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-paper);
   }
   body {
     margin: 0;
@@ -62,14 +62,14 @@
   font-family: var(--font-display);
   font-weight: 500;
   letter-spacing: -0.03em;
-  line-height: 0.95;
+  line-height: 0.92;
 }
 
 .eyebrow {
-  font-size: 0.68rem;
-  letter-spacing: 0.28em;
+  font-size: 0.65rem;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--color-mute);
+  color: var(--color-gold);
   font-weight: 500;
 }
 
@@ -90,7 +90,6 @@
   background: var(--color-banana);
   border-radius: 18px 18px 14px 14px;
   position: relative;
-  box-shadow: inset 0 -6px 0 #d9b83a;
 }
 .minion-goggle {
   position: absolute;
@@ -109,7 +108,6 @@
   inset: 4px;
   background: #24327a;
   border-radius: 50%;
-  box-shadow: inset -3px -2px 0 #0e163d;
 }
 .minion-smile {
   position: absolute;
@@ -121,7 +119,4 @@
   border-bottom: 2px solid #5b3b16;
   border-radius: 0 0 10px 10px;
 }
-.banana {
-  width: 28px;
-  height: 28px;
-}
+

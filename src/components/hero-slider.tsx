@@ -1,26 +1,36 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import type { Piece } from "@/lib/server/boutique";
+import { AnimatePresence, motion } from "framer-motion";
 import { formatMoney } from "@/lib/utils";
 
-export function HeroSlider({ pieces }: { pieces: Piece[] }) {
-  const slides = pieces.slice(0, 6);
+export type Slide = {
+  slug: string;
+  title: string;
+  subtitle?: string;
+  cover_url: string;
+  price_cents?: number;
+  currency?: string;
+  sold_out?: boolean;
+};
+
+export function HeroSlider({ pieces }: { pieces: Slide[] }) {
+  const slides = pieces.filter((p) => p.cover_url).slice(0, 8);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     if (slides.length < 2) return;
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % slides.length);
-    }, 5600);
+    }, 6200);
     return () => window.clearInterval(timer);
   }, [slides.length]);
 
   if (!slides.length) {
     return (
-      <section className="flex min-h-[80dvh] items-end bg-paper-2 px-6 py-16">
+      <section className="flex min-h-[92dvh] items-end bg-ink px-6 py-20 text-paper">
         <div>
           <p className="eyebrow">Maison</p>
-          <h1 className="display mt-4 text-6xl md:text-8xl">BINTI DESIGNS</h1>
+          <h1 className="display mt-6 text-7xl md:text-9xl">BINTI<br />DESIGNS</h1>
         </div>
       </section>
     );
@@ -29,58 +39,63 @@ export function HeroSlider({ pieces }: { pieces: Piece[] }) {
   const current = slides[index] ?? slides[0];
 
   return (
-    <section className="relative min-h-[88dvh] overflow-hidden bg-ink text-paper">
-      {slides.map((slide, i) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-700 ${
-            i === index ? "opacity-100" : "opacity-0"
-          }`}
+    <section className="relative min-h-[92dvh] overflow-hidden bg-ink text-paper">
+      <AnimatePresence mode="sync">
+        <motion.img
+          key={current.slug + current.cover_url}
+          src={current.cover_url}
+          alt={`${current.title} ${current.subtitle ?? ""}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0 h-full w-full object-contain bg-ink"
+        />
+      </AnimatePresence>
+      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-ink/30" />
+      <div className="relative z-10 mx-auto flex min-h-[92dvh] max-w-6xl flex-col justify-end px-5 py-16">
+        <motion.div
+          key={current.slug}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
         >
-          <img
-            src={slide.cover_url}
-            alt={`${slide.title} ${slide.subtitle}`}
-            className="h-full w-full object-contain bg-ink"
-          />
-        </div>
-      ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-ink/20" />
-      <div className="relative z-10 mx-auto flex min-h-[88dvh] max-w-6xl flex-col justify-end px-5 py-12 md:py-16">
-        <p className="eyebrow text-gold">The house</p>
-        <h1 className="display mt-4 max-w-3xl text-6xl text-paper md:text-8xl">
-          {current.title}
-        </h1>
-        <p className="mt-3 text-lg text-gold">{current.subtitle}</p>
-        {current.sold_out ? (
-          <p className="mt-4 text-xs tracking-[0.22em] uppercase text-gold">Reserved</p>
-        ) : current.price_cents ? (
-          <p className="mt-4 text-sm text-paper/80">
-            {formatMoney(current.price_cents, current.currency)}
+          <p className="eyebrow">Binti Designs</p>
+          <h1 className="display mt-5 max-w-4xl text-6xl text-paper md:text-8xl">
+            {current.title}
+          </h1>
+          {current.subtitle ? <p className="mt-4 text-lg text-gold">{current.subtitle}</p> : null}
+          <p className="mt-4 text-sm text-paper/70">
+            {current.sold_out
+              ? "Reserved"
+              : current.price_cents
+                ? formatMoney(current.price_cents, current.currency || "KES")
+                : ""}
           </p>
-        ) : null}
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Link
-            to="/piece/$slug"
-            params={{ slug: current.slug }}
-            className="bg-paper px-6 py-3 text-xs tracking-[0.22em] uppercase text-ink"
-          >
-            View look
-          </Link>
-          <Link
-            to="/collection"
-            className="border border-paper/30 px-6 py-3 text-xs tracking-[0.22em] uppercase text-paper"
-          >
-            Collection
-          </Link>
-        </div>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link
+              to="/piece/$slug"
+              params={{ slug: current.slug }}
+              className="bg-paper px-7 py-3 text-xs tracking-[0.24em] uppercase text-ink"
+            >
+              The look
+            </Link>
+            <Link
+              to="/collection"
+              className="border border-gold/50 px-7 py-3 text-xs tracking-[0.24em] uppercase text-paper"
+            >
+              Collection
+            </Link>
+          </div>
+        </motion.div>
         {slides.length > 1 ? (
-          <div className="mt-10 flex gap-2">
+          <div className="mt-12 flex gap-2">
             {slides.map((slide, i) => (
               <button
-                key={slide.id}
+                key={slide.slug + i}
                 type="button"
                 aria-label={`Look ${i + 1}`}
-                className={`h-px w-10 ${i === index ? "bg-gold" : "bg-paper/30"}`}
+                className={`h-px ${i === index ? "w-12 bg-gold" : "w-8 bg-paper/30"}`}
                 onClick={() => setIndex(i)}
               />
             ))}

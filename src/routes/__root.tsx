@@ -22,7 +22,7 @@ export const Route = createRootRoute({
         name: "description",
         content: "BINTI DESIGNS — an East African atelier. Cut. Drape. Belong.",
       },
-      { name: "theme-color", content: "#161412" },
+      { name: "theme-color", content: "#090909" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -37,7 +37,7 @@ export const Route = createRootRoute({
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Outfit:wght@300;400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap",
       },
     ],
   }),

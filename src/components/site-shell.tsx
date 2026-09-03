@@ -44,7 +44,7 @@ export function SiteShell({
           </nav>
           <div className="flex items-center gap-4 text-xs tracking-[0.18em] uppercase">
             {house ? (
-              <Link to="/studio" className="text-gold">
+              <Link to="/atelier-studio" className="text-gold">
                 Floor
               </Link>
             ) : null}

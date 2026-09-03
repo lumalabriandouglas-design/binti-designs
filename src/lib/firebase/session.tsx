@@ -17,6 +17,7 @@ import {
   type User,
 } from "firebase/auth";
 import { firebaseAuth } from "./app";
+import { HOUSE_EMAIL } from "./firebase";
 
 export type HouseUser = {
   id: string;
@@ -105,6 +106,17 @@ export async function houseGoogle() {
   const auth = firebaseAuth();
   if (!auth) throw new Error("Accounts are not ready.");
   await signInWithPopup(auth, new GoogleAuthProvider());
+}
+
+export async function houseGoogleStrict() {
+  const auth = firebaseAuth();
+  if (!auth) throw new Error("Accounts are not ready.");
+  const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+  const email = cred.user.email?.trim().toLowerCase();
+  if (email !== HOUSE_EMAIL) {
+    await firebaseSignOut(auth);
+    throw new Error("Access denied.");
+  }
 }
 
 export async function houseSignOut() {

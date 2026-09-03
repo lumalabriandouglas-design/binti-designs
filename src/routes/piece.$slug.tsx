@@ -12,6 +12,7 @@ import { useBag } from "@/lib/bag";
 import { formatMoney } from "@/lib/utils";
 import { parseGallery } from "@/lib/media";
 import { CallbackForm } from "@/components/callback-form";
+import { listLooks } from "@/lib/firebase/catalog";
 import { HouseSignedIn, HouseSignedOut } from "@/lib/firebase/session";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
@@ -24,14 +25,38 @@ function PiecePage() {
   });
   const cat = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
 
-  if (pieceQ.isLoading) {
+  const looks = useQuery({ queryKey: ["looks"], queryFn: listLooks });
+  const firestorePiece = looks.data?.find((row) => row.slug === slug);
+  const piece = firestorePiece
+    ? {
+        id: 0,
+        slug: firestorePiece.slug,
+        title: firestorePiece.title,
+        subtitle: firestorePiece.subtitle,
+        description: firestorePiece.description,
+        price_cents: firestorePiece.price_cents,
+        currency: firestorePiece.currency,
+        category: firestorePiece.category,
+        cover_url: firestorePiece.cover_url,
+        gallery: JSON.stringify(firestorePiece.gallery.map((url) => ({ thumb: url, display: url, master: url }))),
+        video_url: firestorePiece.video_url,
+        caption: firestorePiece.caption,
+        status: "published",
+        publish_to_drape: false,
+        drape_status: "idle",
+        sold_out: firestorePiece.sold_out,
+        created_at: firestorePiece.created_at,
+      }
+    : pieceQ.data;
+
+  if (pieceQ.isLoading && looks.isLoading) {
     return (
       <SiteShell settings={cat.data?.settings}>
         <p className="px-5 py-24 text-mute">Preparing the look…</p>
       </SiteShell>
     );
   }
-  if (!pieceQ.data) {
+  if (!piece) {
     return (
       <SiteShell settings={cat.data?.settings}>
         <div className="px-5 py-24">
@@ -46,7 +71,7 @@ function PiecePage() {
 
   return (
     <SiteShell settings={cat.data?.settings}>
-      <PieceView piece={pieceQ.data} />
+      <PieceView piece={piece} />
     </SiteShell>
   );
 }

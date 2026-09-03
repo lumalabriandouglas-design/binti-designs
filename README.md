@@ -1,31 +1,27 @@
 # BINTI DESIGNS
 
-Luxury editorial showroom for BINTI DESIGNS. Public floor is quiet. The studio is hers.
+Luxury maison site. Public floor is quiet. The private floor is not linked.
 
-## Studio
+## Firebase
 
-1. Open the site footer → **Her studio — upload looks**
-2. Enter pin `2408` (change it under House after the first visit)
-3. **Upload a look** — up to eight stills. The house compresses photographs and film; the floor shows a sharp display still, then a master still on a large screen.
-4. Tick **Show on the public site**
-5. Tick **Also send to Drapé Collective** to queue the piece to her existing showroom without a second upload
+Configuration is read from Vercel / Vite env:
 
-Minions stay in the studio only.
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FIREBASE_MEASUREMENT_ID`
 
-Looks live in the Cloudflare R2 archive (`R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`). Never commit those values.
+Enable Google sign-in. Authorized domains must include the live host.
 
-Client accounts use Firebase Auth (`VITE_FIREBASE_*`). Enable Email/Password and Google in the Firebase console, and add the live site domain under Authorized domains. Media does not use Firebase Storage.
+Publish [`firestore.rules`](firestore.rules): public may read looks and create inquiries; only `bintidesigns442@gmail.com` may write looks.
 
-## House notes
+## Private floor
 
-- WhatsApp and payment number live under **House**
-- Clients can reserve from the bag with no account
-- Flutterwave is next; inquiries open WhatsApp when a number is set
-- Drapé Collective showroom URL stays as-is so her Instagram link does not need to change
+Open `/atelier-studio`. Sign in with Google as `bintidesigns442@gmail.com`. Any other account is signed out.
 
-## Run
+## Media
 
-```bash
-npm install
-npm run dev
-```
+Photographs may also use the R2 archive (`R2_*` env).

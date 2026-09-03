@@ -20,6 +20,7 @@ export type Piece = {
   status: string;
   publish_to_drape: boolean;
   drape_status: string;
+  sold_out: boolean;
   created_at: string;
 };
 
@@ -34,6 +35,7 @@ export type Settings = {
   drape_url: string;
   about: string;
   pin_changed: boolean;
+  admin_email: string;
 };
 
 export type JournalEntry = {
@@ -122,7 +124,7 @@ export const getPublicCatalog = createServerFn({ method: "GET" }).handler(
       `;
       const settingsRows = await sql<Settings>`
         select id, brand_name, tagline, whatsapp, phone, payment_phone,
-               instagram, drape_url, about, pin_changed
+               instagram, drape_url, about, pin_changed, admin_email
         from boutique_settings where id = 1
       `;
       const journal = await sql<JournalEntry>`
@@ -273,6 +275,7 @@ export const savePiece = createServerFn({ method: "POST" })
         status: data.status,
         publish_to_drape: data.publish_to_drape,
         drape_status: drapeStatus,
+        sold_out: false,
         created_at: new Date().toISOString(),
       });
       return { id };
@@ -384,6 +387,7 @@ export const saveSettings = createServerFn({ method: "POST" })
       instagram: z.string(),
       drape_url: z.string(),
       about: z.string(),
+      admin_email: z.string().email().optional(),
       new_pin: z.string().optional(),
     }),
   )
@@ -401,6 +405,7 @@ export const saveSettings = createServerFn({ method: "POST" })
         instagram: data.instagram,
         drape_url: data.drape_url,
         about: data.about,
+        admin_email: data.admin_email?.toLowerCase() || m.settings.admin_email,
         pin_changed: data.new_pin && data.new_pin.trim().length >= 4 ? true : m.settings.pin_changed,
       };
       if (data.new_pin && data.new_pin.trim().length >= 4) {
@@ -421,6 +426,7 @@ export const saveSettings = createServerFn({ method: "POST" })
           instagram = ${data.instagram},
           drape_url = ${data.drape_url},
           about = ${data.about},
+          admin_email = ${data.admin_email?.toLowerCase() || "bintidesigns442@gmail.com"},
           pin = ${data.new_pin.trim()},
           pin_changed = true
         where id = 1
@@ -435,7 +441,8 @@ export const saveSettings = createServerFn({ method: "POST" })
           payment_phone = ${data.payment_phone},
           instagram = ${data.instagram},
           drape_url = ${data.drape_url},
-          about = ${data.about}
+          about = ${data.about},
+          admin_email = ${data.admin_email?.toLowerCase() || "bintidesigns442@gmail.com"}
         where id = 1
       `;
     }
@@ -561,3 +568,116 @@ export const placeInquiry = createServerFn({ method: "POST" })
       payment_phone: settings[0]?.payment_phone ?? "",
     };
   });
+
+export const DEFAULT_ADMIN_EMAIL = "bintidesigns442@gmail.com";
+
+export function isHouseEmail(email?: string | null, adminEmail?: string | null) {
+  const allowed = (adminEmail || DEFAULT_ADMIN_EMAIL).trim().toLowerCase();
+  return Boolean(email && email.trim().toLowerCase() === allowed);
+}
+
+export const setSoldOut = createServerFn({ method: "POST" })
+  .validator(z.object({ token: z.string(), id: z.number(), sold_out: z.boolean() }))
+  .handler(async ({ data }) => {
+    await requireStudio(data.token);
+    if (useMemoryDb()) {
+      memory().pieces = memory().pieces.map((p) =>
+        p.id === data.id ? { ...p, sold_out: data.sold_out } : p,
+      );
+      return { ok: true };
+    }
+    const sql = await getSql();
+    await sql`update pieces set sold_out = ${data.sold_out} where id = ${data.id}`;
+    return { ok: true };
+  });
+
+export const requestCallback = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      name: z.string().default(""),
+      phone: z.string().min(7),
+      note: z.string().default(""),
+      piece_slug: z.string().default(""),
+    }),
+  )
+  .handler(async ({ data }) => {
+    if (useMemoryDb()) {
+      const m = memory();
+      const id = m.nextCallback++;
+      m.callbacks.unshift({
+        id,
+        name: data.name,
+        phone: data.phone,
+        note: data.note,
+        piece_slug: data.piece_slug,
+        status: "open",
+        created_at: new Date().toISOString(),
+      });
+      return { ok: true as const, id };
+    }
+    const sql = await getSql();
+    const rows = await sql<{ id: number }>`
+      insert into callbacks (name, phone, note, piece_slug)
+      values (${data.name}, ${data.phone}, ${data.note}, ${data.piece_slug})
+      returning id
+    `;
+    return { ok: true as const, id: rows[0].id };
+  });
+
+export const listCallbacks = createServerFn({ method: "POST" })
+  .validator(z.object({ token: z.string() }))
+  .handler(async ({ data }) => {
+    await requireStudio(data.token);
+    if (useMemoryDb()) return memory().callbacks;
+    const sql = await getSql();
+    return sql<{
+      id: number;
+      name: string;
+      phone: string;
+      note: string;
+      piece_slug: string;
+      status: string;
+      created_at: string;
+    }>`select * from callbacks order by created_at desc limit 80`;
+  });
+
+export const closeCallback = createServerFn({ method: "POST" })
+  .validator(z.object({ token: z.string(), id: z.number() }))
+  .handler(async ({ data }) => {
+    await requireStudio(data.token);
+    if (useMemoryDb()) {
+      memory().callbacks = memory().callbacks.map((row) =>
+        row.id === data.id ? { ...row, status: "closed" } : row,
+      );
+      return { ok: true };
+    }
+    const sql = await getSql();
+    await sql`update callbacks set status = 'closed' where id = ${data.id}`;
+    return { ok: true };
+  });
+
+export const openStudioForHouse = createServerFn({ method: "POST" })
+  .middleware([firebaseAuthMiddleware])
+  .handler(async ({ context }) => {
+    const email = (context as { email?: string | null }).email;
+    if (useMemoryDb()) {
+      const m = memory();
+      if (!isHouseEmail(email, m.settings.admin_email)) {
+        return { ok: false as const };
+      }
+      const token = crypto.randomUUID();
+      m.tokens.add(token);
+      return { ok: true as const, token };
+    }
+    const sql = await getSql();
+    const rows = await sql<{ admin_email: string }>`
+      select admin_email from boutique_settings where id = 1
+    `;
+    if (!isHouseEmail(email, rows[0]?.admin_email)) {
+      return { ok: false as const };
+    }
+    const token = crypto.randomUUID();
+    await sql`insert into studio_tokens (token) values (${token})`;
+    return { ok: true as const, token };
+  });
+

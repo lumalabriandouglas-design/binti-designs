@@ -23,6 +23,7 @@ function SettingsPage() {
   const [pay, setPay] = useState("");
   const [ig, setIg] = useState("");
   const [drape, setDrape] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
   const [pin, setPin] = useState("");
   const [note, setNote] = useState("");
 
@@ -36,6 +37,7 @@ function SettingsPage() {
     setPay(s.payment_phone);
     setIg(s.instagram);
     setDrape(s.drape_url);
+    setAdminEmail(s.admin_email || "bintidesigns442@gmail.com");
   }, [s]);
 
   const save = useMutation({
@@ -51,6 +53,7 @@ function SettingsPage() {
           payment_phone: pay,
           instagram: ig,
           drape_url: drape,
+          admin_email: adminEmail,
           new_pin: pin || undefined,
         },
       }),
@@ -103,6 +106,15 @@ function SettingsPage() {
           />
         </label>
       ))}
+      <label className="block text-xs uppercase tracking-[0.16em] text-paper/45">
+        House email — only this account opens the floor
+        <input
+          type="email"
+          value={adminEmail}
+          onChange={(e) => setAdminEmail(e.target.value)}
+          className="mt-2 w-full border border-white/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-paper outline-none"
+        />
+      </label>
       <label className="block text-xs uppercase tracking-[0.16em] text-paper/45">
         About
         <textarea

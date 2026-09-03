@@ -11,6 +11,7 @@ import {
 import { useBag } from "@/lib/bag";
 import { formatMoney } from "@/lib/utils";
 import { parseGallery } from "@/lib/media";
+import { CallbackForm } from "@/components/callback-form";
 import { HouseSignedIn, HouseSignedOut } from "@/lib/firebase/session";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
@@ -121,12 +122,17 @@ function PieceView({ piece }: { piece: Piece }) {
           </p>
         ) : null}
         <p className="mt-10 text-lg">
-          {piece.price_cents ? formatMoney(piece.price_cents, piece.currency) : "Price on inquiry"}
+          {piece.sold_out
+            ? "This look is reserved."
+            : piece.price_cents
+              ? formatMoney(piece.price_cents, piece.currency)
+              : "Price on inquiry"}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
+          {piece.sold_out ? null : (
           <button
             type="button"
-            className="bg-ink px-6 py-3 text-[0.7rem] tracking-[0.2em] uppercase text-paper"
+            className="bg-ink px-6 py-3 text-xs tracking-[0.2em] uppercase text-paper"
             onClick={() => {
               add({
                 id: piece.id,
@@ -142,6 +148,7 @@ function PieceView({ piece }: { piece: Piece }) {
           >
             Add to bag
           </button>
+          )}
           <HouseSignedIn>
             <button
               type="button"
@@ -161,10 +168,9 @@ function PieceView({ piece }: { piece: Piece }) {
           </HouseSignedOut>
         </div>
         {note ? <p className="mt-4 text-sm text-mute">{note}</p> : null}
-        <p className="mt-10 text-xs leading-relaxed text-mute">
-          Checkout does not require an account. Flutterwave follows. The bag
-          opens an inquiry — and WhatsApp, once she adds her number in the atelier.
-        </p>
+        <div className="mt-14 border-t border-line pt-10">
+          <CallbackForm pieceSlug={piece.slug} />
+        </div>
       </div>
     </section>
   );

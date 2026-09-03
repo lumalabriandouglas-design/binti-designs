@@ -1,5 +1,15 @@
 import type { JournalEntry, OrderRow, Piece, Settings } from "@/lib/server/boutique";
 
+export type CallbackRow = {
+  id: number;
+  name: string;
+  phone: string;
+  note: string;
+  piece_slug: string;
+  status: string;
+  created_at: string;
+};
+
 export function useMemoryDb() {
   return Boolean(process.env.VERCEL) && !process.env.DATABASE_URL;
 }
@@ -30,6 +40,7 @@ function look(
     status: "published",
     publish_to_drape: false,
     drape_status: "idle",
+    sold_out: false,
     created_at: now(),
   };
 }
@@ -41,11 +52,13 @@ type Memory = {
   pieces: Piece[];
   journal: JournalEntry[];
   orders: OrderRow[];
+  callbacks: CallbackRow[];
   tokens: Set<string>;
   wishlists: Map<string, number[]>;
   nextPiece: number;
   nextJournal: number;
   nextOrder: number;
+  nextCallback: number;
 };
 
 const g = globalThis as typeof globalThis & { __bintiMemory__?: Memory };
@@ -66,6 +79,7 @@ function seed(): Memory {
       about:
         "BINTI DESIGNS is an East African atelier devoted to precise cut, quiet luxury, and clothes that hold their shape in the light.",
       pin_changed: false,
+      admin_email: "bintidesigns442@gmail.com",
     },
     pieces: [
       look(
@@ -95,11 +109,13 @@ function seed(): Memory {
     ],
     journal: [],
     orders: [],
+    callbacks: [],
     tokens: new Set(),
     wishlists: new Map(),
     nextPiece: 4,
     nextJournal: 1,
     nextOrder: 1,
+    nextCallback: 1,
   };
 }
 

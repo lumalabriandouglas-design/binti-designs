@@ -3,13 +3,13 @@
 @theme {
   --font-display: "Cormorant Garamond", "Times New Roman", serif;
   --font-sans: "Outfit", "Segoe UI", sans-serif;
-  --color-paper: #f4eee6;
-  --color-paper-2: #ebe3d6;
-  --color-ink: #161412;
-  --color-ink-soft: #2c2824;
-  --color-mute: #7a7268;
-  --color-line: #d8cfc3;
-  --color-gold: #b7a48a;
+  --color-paper: #f3eee6;
+  --color-paper-2: #e8e0d4;
+  --color-ink: #0c0b0a;
+  --color-ink-soft: #2a2622;
+  --color-mute: #746b61;
+  --color-line: #d5cdc2;
+  --color-gold: #9a8660;
   --color-banana: #f0d24b;
   --color-minion: #2b3a8f;
   --radius-sm: 6px;

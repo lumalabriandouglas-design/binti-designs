@@ -16,5 +16,5 @@ export const firebaseAuthMiddleware = createMiddleware({ type: "function" })
   })
   .server(async ({ next, context }) => {
     const session = await verifyFirebaseToken(context.firebaseToken);
-    return next({ context: { userId: session.userId } });
+    return next({ context: { userId: session.userId, email: session.email } });
   });

@@ -2,9 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
+  getHouseNotes,
   listInquiries,
   listLooks,
   removeLook,
+  saveHouseNotes,
   saveLook,
   setLookSoldOut,
   type Look,
@@ -52,7 +54,7 @@ function AtelierStudio() {
     return (
       <QuietFrame>
         This key does not open the floor.
-        <Link to="/" className="mt-6 block text-banana">
+        <Link to="/" className="mt-6 block text-mute">
           Return
         </Link>
       </QuietFrame>
@@ -66,7 +68,7 @@ function AtelierStudio() {
 
 function QuietFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#0d0c0a] px-6 text-center text-paper">
+    <div className="flex min-h-dvh items-center justify-center bg-paper px-6 text-center text-ink">
       <div className="max-w-md">{children}</div>
     </div>
   );
@@ -85,14 +87,14 @@ function StudioDoor({
   return (
     <QuietFrame>
       <BananaMark className="mx-auto mb-8 h-8 w-8" />
-      <p className="text-[0.62rem] tracking-[0.32em] uppercase text-banana">Private floor</p>
-      <h1 className="display mt-4 text-5xl text-paper">Atelier</h1>
-      <p className="mt-4 text-sm text-paper/50">
-        Only the house account may enter. The public site does not mention this room.
+      <p className="eyebrow">Private floor</p>
+      <h1 className="display mt-4 text-5xl">Welcome back, Natasha.</h1>
+      <p className="mt-4 text-sm text-mute">
+        The cloth is already lifted. The table is as you left it.
       </p>
       <button
         type="button"
-        className="mt-10 w-full border border-banana/60 px-6 py-3 text-xs tracking-[0.24em] uppercase text-banana"
+        className="mt-10 w-full border border-ink px-6 py-3 text-xs tracking-[0.24em] uppercase"
         onClick={async () => {
           setDenied("");
           try {
@@ -124,7 +126,7 @@ function StudioDoor({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm text-paper outline-none"
+          className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
         />
         <input
           required
@@ -132,13 +134,13 @@ function StudioDoor({
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm text-paper outline-none"
+          className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
         />
-        <button type="submit" className="w-full bg-banana py-3 text-xs tracking-[0.22em] uppercase text-ink">
+        <button type="submit" className="w-full bg-ink py-3 text-xs tracking-[0.22em] uppercase text-paper">
           Open
         </button>
       </form>
-      {denied ? <p className="mt-6 text-sm text-banana">{denied}</p> : null}
+      {denied ? <p className="mt-6 text-sm text-mute">{denied}</p> : null}
     </QuietFrame>
   );
 }
@@ -148,6 +150,7 @@ function Dashboard({ email }: { email: string }) {
   const [editing, setEditing] = useState<Look | null>(null);
   const [token, setToken] = useState("");
   const catalog = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
+  const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
   const firestore = useQuery({ queryKey: ["looks"], queryFn: listLooks });
   const inquiries = useQuery({ queryKey: ["inquiries"], queryFn: listInquiries });
 
@@ -194,29 +197,29 @@ function Dashboard({ email }: { email: string }) {
   }
 
   return (
-    <div className="min-h-dvh bg-[#0d0c0a] text-paper">
-      <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
+    <div className="min-h-dvh bg-paper text-ink">
+      <header className="border-b border-line">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-6">
           <div className="flex items-center gap-3">
             <BananaMark className="h-6 w-6" />
             <div>
               <p className="display text-2xl leading-none">Studio</p>
-              <p className="mt-1 text-[0.6rem] tracking-[0.22em] uppercase text-banana">{email}</p>
+              <p className="mt-1 text-[0.68rem] text-mute">Welcome back, Natasha.</p>
             </div>
           </div>
-          <nav className="flex flex-wrap items-center gap-5 text-[0.65rem] tracking-[0.22em] uppercase text-paper/45">
+          <nav className="flex flex-wrap items-center gap-5 text-[0.65rem] tracking-[0.22em] uppercase text-mute">
             {(
               [
                 ["rack", "Rack"],
-                ["table", "Look"],
-                ["house", "House"],
+                ["table", "House"],
+                ["house", "Numbers"],
                 ["requests", "Requests"],
               ] as const
             ).map(([id, label]) => (
               <button
                 key={id}
                 type="button"
-                className={tab === id ? "text-banana" : ""}
+                className={tab === id ? "text-ink" : ""}
                 onClick={() => {
                   if (id === "table" && tab !== "table") setEditing(null);
                   setTab(id);
@@ -225,7 +228,7 @@ function Dashboard({ email }: { email: string }) {
                 {label}
               </button>
             ))}
-            <Link to="/" className="text-paper/30">
+            <Link to="/" className="text-mute">
               Public
             </Link>
             <button type="button" onClick={() => void houseSignOut()}>
@@ -263,13 +266,16 @@ function Dashboard({ email }: { email: string }) {
         {tab === "house" ? (
           <HouseBook
             token={token}
-            whatsapp={catalog.data?.settings?.whatsapp ?? ""}
-            phone={catalog.data?.settings?.phone ?? ""}
-            payment={catalog.data?.settings?.payment_phone ?? ""}
-            instagram={catalog.data?.settings?.instagram ?? ""}
-            about={catalog.data?.settings?.about ?? ""}
-            tagline={catalog.data?.settings?.tagline ?? ""}
-            onSaved={() => void catalog.refetch()}
+            whatsapp={notes.data?.whatsapp || catalog.data?.settings?.whatsapp || ""}
+            phone={notes.data?.phone || catalog.data?.settings?.phone || ""}
+            payment={notes.data?.payment_phone || catalog.data?.settings?.payment_phone || ""}
+            instagram={notes.data?.instagram || catalog.data?.settings?.instagram || ""}
+            about={notes.data?.about || catalog.data?.settings?.about || ""}
+            tagline={notes.data?.tagline || catalog.data?.settings?.tagline || ""}
+            onSaved={() => {
+              void catalog.refetch();
+              void notes.refetch();
+            }}
           />
         ) : null}
         {tab === "requests" ? (
@@ -277,10 +283,10 @@ function Dashboard({ email }: { email: string }) {
         ) : null}
       </div>
 
-      <footer className="group border-t border-white/10">
+      <footer className="group border-t border-line">
         <div className="mx-auto flex max-w-6xl items-end justify-between px-5 py-8">
-          <p className="text-[0.62rem] tracking-[0.22em] uppercase text-paper/30">
-            For her eyes only
+          <p className="text-[0.62rem] tracking-[0.22em] uppercase text-mute">
+            For Natasha only
           </p>
           <MinionPeek />
         </div>
@@ -304,21 +310,21 @@ function Rack({
     <div>
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[0.62rem] tracking-[0.28em] uppercase text-banana">The rack</p>
-          <h1 className="display mt-2 text-5xl">Every look</h1>
+          <p className="eyebrow">The rack</p>
+          <h1 className="display mt-2 text-5xl">The house</h1>
         </div>
       </div>
       <div className="mt-10 grid gap-5 md:grid-cols-2">
         {looks.length === 0 ? (
-          <p className="text-sm text-paper/45">The rack is empty. Open Look to hang the first piece.</p>
+          <p className="text-sm text-mute">The rack is empty. Open House to hang the first piece.</p>
         ) : null}
         {looks.map((look) => (
-          <article key={look.id} className="flex gap-4 border border-white/10 p-4">
-            <img src={look.cover_url} alt="" className="h-36 w-24 object-contain bg-white/5" />
+          <article key={look.id} className="flex gap-4 border border-line p-4">
+            <img src={look.cover_url} alt="" className="h-36 w-24 object-contain bg-paper-2" />
             <div className="min-w-0 flex-1">
-              <p className="text-paper">{look.title}</p>
-              <p className="text-sm text-paper/45">{look.subtitle || look.category}</p>
-              <p className="mt-2 text-sm text-paper/55">
+              <p>{look.title}</p>
+              <p className="text-sm text-mute">{look.subtitle || look.category}</p>
+              <p className="mt-2 text-sm text-mute">
                 {look.sold_out
                   ? "Reserved"
                   : look.price_cents
@@ -326,12 +332,12 @@ function Rack({
                     : "Inquiry"}
               </p>
               <div className="mt-4 flex flex-wrap gap-2 text-[0.62rem] tracking-[0.16em] uppercase">
-                <button type="button" className="border border-white/20 px-3 py-2" onClick={() => onEdit(look)}>
+                <button type="button" className="border border-line px-3 py-2" onClick={() => onEdit(look)}>
                   Edit
                 </button>
                 <button
                   type="button"
-                  className="border border-white/20 px-3 py-2"
+                  className="border border-line px-3 py-2"
                   onClick={async () => {
                     if (look.id.startsWith("local-")) {
                       await setSoldOut({
@@ -351,7 +357,7 @@ function Rack({
                 </button>
                 <button
                   type="button"
-                  className="border border-white/20 px-3 py-2 text-banana"
+                  className="border border-line px-3 py-2 text-mute"
                   onClick={async () => {
                     if (!window.confirm("Remove this look from the house?")) return;
                     if (look.id.startsWith("local-")) {
@@ -460,11 +466,11 @@ function LookForm({
         save.mutate();
       }}
     >
-      <p className="text-[0.62rem] tracking-[0.28em] uppercase text-banana">
-        {existing ? "Edit look" : "New look"}
+      <p className="text-[0.62rem] tracking-[0.28em] uppercase text-mute">
+        {existing ? "Edit piece" : "New piece"}
       </p>
-      <h1 className="display text-5xl">{existing ? existing.title : "Hang a look"}</h1>
-      <label className="block border border-dashed border-banana/35 px-4 py-8 text-center text-sm text-paper/55">
+      <h1 className="display text-5xl">{existing ? existing.title : "Hang in the house"}</h1>
+      <label className="block border border-dashed border-line px-4 py-8 text-center text-sm text-mute">
         Photographs — five to eight. The first is the cover unless you choose another.
         <input
           type="file"
@@ -487,18 +493,18 @@ function LookForm({
       {gallery.length ? (
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
           {gallery.map((url, index) => (
-            <div key={`${url}-${index}`} className="relative bg-white/5">
+            <div key={`${url}-${index}`} className="relative bg-paper-2">
               <button type="button" onClick={() => setCover(url)}>
                 <img src={url} alt="" className="h-20 w-full object-contain" />
               </button>
               {url === cover ? (
-                <span className="absolute left-1 top-1 text-[0.55rem] uppercase tracking-[0.12em] text-banana">
+                <span className="absolute left-1 top-1 text-[0.55rem] uppercase tracking-[0.12em] text-mute">
                   Cover
                 </span>
               ) : null}
               <button
                 type="button"
-                className="absolute right-1 top-1 text-[0.55rem] uppercase text-paper/70"
+                className="absolute right-1 top-1 text-[0.55rem] uppercase text-mute"
                 onClick={() => {
                   const next = gallery.filter((_, i) => i !== index);
                   setGallery(next);
@@ -511,7 +517,7 @@ function LookForm({
           ))}
         </div>
       ) : null}
-      <label className="block border border-dashed border-white/15 px-4 py-6 text-center text-sm text-paper/45">
+      <label className="block border border-dashed border-line px-4 py-6 text-center text-sm text-mute">
         Optional film
         <input
           type="file"
@@ -529,52 +535,52 @@ function LookForm({
           }}
         />
       </label>
-      {video ? <video src={video} controls className="w-full bg-white/5" /> : null}
+      {video ? <video src={video} controls className="w-full bg-paper-2" /> : null}
       <input
         required
         placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"
+        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
       />
       <input
         placeholder="Colour / season"
         value={subtitle}
         onChange={(e) => setSubtitle(e.target.value)}
-        className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"
+        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
       />
       <input
         placeholder="Category"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"
+        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
       />
       <textarea
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="h-24 w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"
+        className="h-24 w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
       />
       <textarea
         placeholder="Caption for the film or sitting"
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
-        className="h-20 w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"
+        className="h-20 w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
       />
       <input
         placeholder="Price UGX"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
-        className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"
+        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
       />
-      <label className="flex items-center gap-3 text-sm text-paper/70">
+      <label className="flex items-center gap-3 text-sm text-mute">
         <input type="checkbox" checked={soldOut} onChange={(e) => setSold(e.target.checked)} />
         Sold out
       </label>
-      {busy ? <p className="text-sm text-banana">{busy}</p> : null}
-      {error ? <p className="text-sm text-banana">{error}</p> : null}
-      <button type="submit" className="bg-banana px-6 py-3 text-xs tracking-[0.22em] uppercase text-ink">
-        {save.isPending ? "Saving…" : existing ? "Save changes" : "Hang look"}
+      {busy ? <p className="text-sm text-mute">{busy}</p> : null}
+      {error ? <p className="text-sm text-mute">{error}</p> : null}
+      <button type="submit" className="bg-ink px-6 py-3 text-xs tracking-[0.22em] uppercase text-paper">
+        {save.isPending ? "Saving…" : existing ? "Save changes" : "Hang in the house"}
       </button>
     </form>
   );
@@ -621,29 +627,35 @@ function HouseBook({
       className="mx-auto max-w-xl space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!token) {
-          setNote("Sign in again to save house notes.");
-          return;
-        }
-        await saveSettings({
-          data: {
-            token,
-            brand_name: "BINTI DESIGNS",
-            tagline: line,
-            whatsapp: wa,
-            phone: tel,
-            payment_phone: pay,
-            instagram: ig,
-            drape_url: "https://odrapecollective.com",
-            about: story,
-            admin_email: HOUSE_EMAIL,
-          },
+        await saveHouseNotes({
+          tagline: line,
+          about: story,
+          whatsapp: wa,
+          phone: tel,
+          payment_phone: pay,
+          instagram: ig,
         });
-        setNote("House notes saved.");
+        if (token) {
+          await saveSettings({
+            data: {
+              token,
+              brand_name: "BINTI DESIGNS",
+              tagline: line,
+              whatsapp: wa,
+              phone: tel,
+              payment_phone: pay,
+              instagram: ig,
+              drape_url: "https://odrapecollective.com",
+              about: story,
+              admin_email: HOUSE_EMAIL,
+            },
+          });
+        }
+        setNote("Numbers saved. They now show on the house, the bag, and the footer.");
         onSaved();
       }}
     >
-      <p className="text-[0.62rem] tracking-[0.28em] uppercase text-banana">House</p>
+      <p className="eyebrow">House</p>
       <h1 className="display text-5xl">Numbers</h1>
       {(
         [
@@ -654,27 +666,27 @@ function HouseBook({
           ["Line", line, setLine],
         ] as const
       ).map(([label, value, set]) => (
-        <label key={label} className="block text-[0.62rem] uppercase tracking-[0.16em] text-paper/40">
+        <label key={label} className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
           {label}
           <input
             value={value}
             onChange={(e) => set(e.target.value)}
-            className="mt-2 w-full border border-white/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-paper outline-none"
+            className="mt-2 w-full border border-line bg-transparent px-3 py-3 text-sm normal-case tracking-normal outline-none"
           />
         </label>
       ))}
-      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-paper/40">
+      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
         About
         <textarea
           value={story}
           onChange={(e) => setStory(e.target.value)}
-          className="mt-2 h-32 w-full border border-white/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-paper outline-none"
+          className="mt-2 h-32 w-full border border-line bg-transparent px-3 py-3 text-sm normal-case tracking-normal outline-none"
         />
       </label>
-      <button type="submit" className="bg-banana px-6 py-3 text-xs tracking-[0.22em] uppercase text-ink">
+      <button type="submit" className="bg-ink px-6 py-3 text-xs tracking-[0.22em] uppercase text-paper">
         Save house
       </button>
-      {note ? <p className="text-sm text-banana">{note}</p> : null}
+      {note ? <p className="text-sm text-mute">{note}</p> : null}
     </form>
   );
 }
@@ -682,16 +694,16 @@ function HouseBook({
 function Requests({ rows }: { rows: { id: string; name: string; phone: string; note: string; pieceSlug: string }[] }) {
   return (
     <div>
-      <p className="text-[0.62rem] tracking-[0.28em] uppercase text-banana">Requests</p>
+      <p className="text-[0.62rem] tracking-[0.28em] uppercase text-mute">Requests</p>
       <h1 className="display mt-2 text-5xl">Call backs</h1>
-      <ul className="mt-8 divide-y divide-white/10">
-        {rows.length === 0 ? <li className="py-4 text-sm text-paper/40">None yet.</li> : null}
+      <ul className="mt-8 divide-y divide-line">
+        {rows.length === 0 ? <li className="py-4 text-sm text-mute">None yet.</li> : null}
         {rows.map((row) => (
           <li key={row.id} className="py-4 text-sm">
             <p>
               {row.name || "Client"} · {row.phone}
             </p>
-            <p className="text-paper/40">
+            <p className="text-mute">
               {row.pieceSlug} {row.note}
             </p>
           </li>

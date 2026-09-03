@@ -12,7 +12,8 @@ import { useBag } from "@/lib/bag";
 import { formatMoney } from "@/lib/utils";
 import { parseGallery } from "@/lib/media";
 import { CallbackForm } from "@/components/callback-form";
-import { listLooks } from "@/lib/firebase/catalog";
+import { listLooks, getHouseNotes } from "@/lib/firebase/catalog";
+import { HouseContact, mergeHouse } from "@/components/house-contact";
 import { HouseSignedIn, HouseSignedOut } from "@/lib/firebase/session";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
@@ -193,10 +194,21 @@ function PieceView({ piece }: { piece: Piece }) {
           </HouseSignedOut>
         </div>
         {note ? <p className="mt-4 text-sm text-mute">{note}</p> : null}
+        <PieceContact />
         <div className="mt-14 border-t border-line pt-10">
           <CallbackForm pieceSlug={piece.slug} />
         </div>
       </div>
     </section>
+  );
+}
+
+function PieceContact() {
+  const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
+  const cat = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
+  return (
+    <div className="mt-10">
+      <HouseContact house={mergeHouse(cat.data?.settings, notes.data)} />
+    </div>
   );
 }

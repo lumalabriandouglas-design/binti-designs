@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SiteShell } from "@/components/site-shell";
 import { getPublicCatalog, placeInquiry } from "@/lib/server/boutique";
+import { getHouseNotes } from "@/lib/firebase/catalog";
 import { useBag } from "@/lib/bag";
 import { formatMoney } from "@/lib/utils";
 
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/bag")({ component: BagPage });
 
 function BagPage() {
   const cat = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
+  const houseBook = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
   const items = useBag((s) => s.items);
   const setQty = useBag((s) => s.setQty);
   const clear = useBag((s) => s.clear);
@@ -37,15 +39,17 @@ function BagPage() {
         .map((i) => `• ${i.title} ${i.subtitle} ×${i.qty}`)
         .join("%0A");
       const msg = `Hello BINTI DESIGNS — I would like to reserve:%0A${lines}%0A%0AName: ${name}%0APhone: ${phone}`;
-      if (res.whatsapp) {
-        const num = res.whatsapp.replace(/[^\d]/g, "");
+      const wa = res.whatsapp || houseBook.data?.whatsapp || cat.data?.settings?.whatsapp || "";
+      const pay = res.payment_phone || houseBook.data?.payment_phone || cat.data?.settings?.payment_phone || "";
+      if (wa) {
+        const num = wa.replace(/[^\d]/g, "");
         window.open(`https://wa.me/${num}?text=${msg}`, "_blank");
       }
       clear();
       setDone(
-        res.payment_phone
-          ? `Inquiry #${res.id} received. Pay to ${res.payment_phone} when she confirms. Flutterwave follows.`
-          : `Inquiry #${res.id} received. She will confirm the piece and payment.`,
+        pay
+          ? `Inquiry #${res.id} received. Pay to ${pay} when she confirms.`
+          : `Inquiry #${res.id} received. She will confirm the piece.`,
       );
     },
   });

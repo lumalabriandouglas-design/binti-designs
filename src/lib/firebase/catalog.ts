@@ -3,8 +3,10 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   serverTimestamp,
+  setDoc,
   updateDoc,
   type DocumentData,
 } from "firebase/firestore";
@@ -138,3 +140,35 @@ export async function listInquiries(): Promise<Inquiry[]> {
     })
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
+
+export type HouseNotes = {
+  tagline: string;
+  about: string;
+  whatsapp: string;
+  phone: string;
+  payment_phone: string;
+  instagram: string;
+};
+
+export async function getHouseNotes(): Promise<HouseNotes | null> {
+  const db = getFirebaseDb();
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "house", "notes"));
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return {
+    tagline: String(data.tagline ?? ""),
+    about: String(data.about ?? ""),
+    whatsapp: String(data.whatsapp ?? ""),
+    phone: String(data.phone ?? ""),
+    payment_phone: String(data.payment_phone ?? ""),
+    instagram: String(data.instagram ?? ""),
+  };
+}
+
+export async function saveHouseNotes(notes: HouseNotes) {
+  const db = getFirebaseDb();
+  if (!db) throw new Error("House book is not connected.");
+  await setDoc(doc(db, "house", "notes"), notes, { merge: true });
+}
+

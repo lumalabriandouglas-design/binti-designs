@@ -20,6 +20,11 @@ service cloud.firestore {
       allow read, update, delete: if isHouse();
     }
 
+    match /house/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isHouse();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

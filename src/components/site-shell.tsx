@@ -1,9 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { CircleUser, ShoppingBag } from "lucide-react";
 import { HouseSignedIn, houseSignOut, useHouseUser } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
 import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
+import { getHouseNotes } from "@/lib/firebase/catalog";
+import { HouseCurtain } from "@/components/house-curtain";
+import { HouseContact, mergeHouse } from "@/components/house-contact";
 
 const NAV = [
   { to: "/collection", label: "Collection" },
@@ -21,11 +25,14 @@ export function SiteShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const count = useBag((s) => s.items.reduce((n, i) => n + i.qty, 0));
   const { user } = useHouseUser();
-  const house = isHouseAccount(user?.primaryEmail, settings?.admin_email);
-  const wa = settings?.whatsapp?.replace(/[^\d+]/g, "") ?? "";
+  const houseAccount = isHouseAccount(user?.primaryEmail, settings?.admin_email);
+  const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
+  const house = mergeHouse(settings, notes.data);
+  const hidden = pathname.startsWith("/atelier-studio");
 
   return (
     <div className="min-h-dvh bg-paper text-ink">
+      {hidden ? null : <HouseCurtain />}
       <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6 md:px-10">
           <Link to="/" className="display text-2xl tracking-tight md:text-3xl">
@@ -43,14 +50,14 @@ export function SiteShell({
             ))}
           </nav>
           <div className="flex items-center gap-4">
-            {house ? (
+            {houseAccount ? (
               <Link to="/atelier-studio" className="text-[0.62rem] tracking-[0.2em] uppercase text-mute">
                 Floor
               </Link>
             ) : null}
             <HouseSignedIn>
-              {house ? null : (
-                <Link to="/account" aria-label="Saved looks" className="text-ink">
+              {houseAccount ? null : (
+                <Link to="/account" aria-label="Saved" className="text-ink">
                   <CircleUser className="h-5 w-5" strokeWidth={1.4} />
                 </Link>
               )}
@@ -83,12 +90,10 @@ export function SiteShell({
       <footer className="mt-32 border-t border-line">
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-3 md:px-10">
           <p className="text-4xl md:text-5xl">BINTI DESIGNS</p>
-          <p className="text-sm leading-relaxed text-mute">
-            {settings?.tagline ?? "Cut. Drape. Belong."}
-          </p>
+          <p className="text-sm leading-relaxed text-mute">{house.tagline}</p>
           <div className="text-sm leading-7 text-mute">
-            {settings?.instagram ? (
-              <a href={settings.instagram} target="_blank" rel="noreferrer">
+            {house.instagram ? (
+              <a href={house.instagram} target="_blank" rel="noreferrer">
                 Instagram
               </a>
             ) : null}
@@ -100,14 +105,9 @@ export function SiteShell({
                 </a>
               </>
             ) : null}
-            {wa ? (
-              <>
-                <br />
-                <a href={`https://wa.me/${wa.replace(/^\+/, "")}`} target="_blank" rel="noreferrer">
-                  WhatsApp
-                </a>
-              </>
-            ) : null}
+            <div className="mt-4">
+              <HouseContact house={house} />
+            </div>
           </div>
         </div>
       </footer>

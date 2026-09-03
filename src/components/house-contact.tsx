@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy, Phone } from "lucide-react";
 import type { Settings } from "@/lib/server/boutique";
 import type { HouseNotes } from "@/lib/firebase/catalog";
+import { readHouseBook } from "@/lib/house-book";
 import { InstagramMark, WhatsAppMark } from "@/components/brand-marks";
 
 export function mergeHouse(
@@ -16,17 +17,18 @@ export function mergeHouse(
   instagram: string;
   waLink: string;
 } {
-  const whatsapp = notes?.whatsapp || settings?.whatsapp || "";
-  const phone = notes?.phone || settings?.phone || "";
-  const payment = notes?.payment_phone || settings?.payment_phone || "";
+  const local = readHouseBook();
+  const whatsapp = notes?.whatsapp || settings?.whatsapp || local.whatsapp;
+  const phone = notes?.phone || settings?.phone || local.phone;
+  const payment = notes?.payment_phone || settings?.payment_phone || local.payment_phone;
   const digits = whatsapp.replace(/[^\d+]/g, "").replace(/^\+/, "");
   return {
-    tagline: notes?.tagline || settings?.tagline || "Cut. Drape. Belong.",
-    about: notes?.about || settings?.about || "",
+    tagline: notes?.tagline || settings?.tagline || local.tagline,
+    about: notes?.about || settings?.about || local.about,
     whatsapp,
     phone,
     payment,
-    instagram: notes?.instagram || settings?.instagram || "",
+    instagram: notes?.instagram || settings?.instagram || local.instagram,
     waLink: digits ? `https://wa.me/${digits}` : "",
   };
 }

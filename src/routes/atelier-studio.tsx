@@ -20,6 +20,7 @@ import {
 } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
 import { compressImageFile, compressVideoFile, parseGallery } from "@/lib/media";
+import { Phone } from "lucide-react";
 import { GoogleMark, InstagramMark, WhatsAppMark } from "@/components/brand-marks";
 import { BananaMark, MinionPeek } from "@/components/minion";
 import {
@@ -31,6 +32,7 @@ import {
   setSoldOut,
 } from "@/lib/server/boutique";
 import { formatMoney } from "@/lib/utils";
+import { writeHouseBook, readHouseBook } from "@/lib/house-book";
 import { setStudioToken } from "@/lib/bag";
 
 export const Route = createFileRoute("/atelier-studio")({ component: AtelierStudio });
@@ -616,12 +618,13 @@ function HouseBook({
   const [note, setNote] = useState("");
 
   useEffect(() => {
-    setWa(whatsapp);
-    setTel(phone);
-    setPay(payment);
-    setIg(instagram);
-    setLine(tagline);
-    setStory(about);
+    const local = readHouseBook();
+    setWa(whatsapp || local.whatsapp);
+    setTel(phone || local.phone);
+    setPay(payment || local.payment_phone);
+    setIg(instagram || local.instagram);
+    setLine(tagline || local.tagline);
+    setStory(about || local.about);
   }, [whatsapp, phone, payment, instagram, tagline, about]);
 
   return (
@@ -629,14 +632,20 @@ function HouseBook({
       className="mx-auto max-w-xl space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
-        await saveHouseNotes({
+        const book = {
           tagline: line,
           about: story,
-          whatsapp: wa,
-          phone: tel,
-          payment_phone: pay,
-          instagram: ig,
-        });
+          whatsapp: wa.trim(),
+          phone: tel.trim(),
+          payment_phone: pay.trim(),
+          instagram: ig.trim(),
+        };
+        writeHouseBook(book);
+        try {
+          await saveHouseNotes(book);
+        } catch {
+          /* Firestore rules may not be live yet — the book is already on this device. */
+        }
         if (token) {
           await saveSettings({
             data: {
@@ -671,6 +680,8 @@ function HouseBook({
         <label key={label} className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
           <span className="flex items-center gap-2">
             {label === "WhatsApp" ? <WhatsAppMark className="h-3.5 w-3.5 text-[#25D366]" /> : null}
+            {label === "Contact phone" ? <Phone className="h-3.5 w-3.5" strokeWidth={1.5} /> : null}
+            {label === "Payment number" ? <span className="text-[10px] tracking-[0.08em]">PAY</span> : null}
             {label === "Instagram URL" ? <InstagramMark className="h-3.5 w-3.5" /> : null}
             {label}
           </span>

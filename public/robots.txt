@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /atelier-studio
+Disallow: /studio
+Disallow: /studio/upload
+Disallow: /studio/settings

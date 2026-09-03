@@ -81,6 +81,7 @@ export async function saveLook(look: Partial<Look> & { title: string; cover_url:
     video_url: look.video_url ?? "",
     sold_out: Boolean(look.sold_out),
     created_at: look.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
   if (look.id) {
     await updateDoc(doc(db, "pieces", look.id), payload);

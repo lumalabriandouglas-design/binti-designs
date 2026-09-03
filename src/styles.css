@@ -3,13 +3,13 @@
 @theme {
   --font-display: "Playfair Display", "Times New Roman", serif;
   --font-sans: "Inter", "Helvetica Neue", sans-serif;
-  --color-paper: #ffffff;
-  --color-paper-2: #f4f4f4;
-  --color-ink: #0a0a0a;
-  --color-ink-soft: #1a1a1a;
-  --color-mute: #6b6b6b;
-  --color-line: #e6e6e6;
-  --color-gold: #8a7a58;
+  --color-paper: #f3eee6;
+  --color-paper-2: #e7e1d6;
+  --color-ink: #2a2a2a;
+  --color-ink-soft: #3a3a3a;
+  --color-mute: #6d7378;
+  --color-line: #cfd3d6;
+  --color-gold: #6d7378;
   --color-banana: #f0d24b;
   --color-minion: #2b3a8f;
   --radius-sm: 0px;
@@ -19,7 +19,7 @@
 
 @layer base {
   html {
-    background: #ffffff;
+    background: #f3eee6;
     color: var(--color-ink);
   }
   body {
@@ -28,7 +28,17 @@
     font-family: var(--font-sans);
     background: var(--color-paper);
     color: var(--color-ink);
-    letter-spacing: 0.01em;
+    letter-spacing: 0.015em;
+  }
+  h1,
+  h2,
+  h3,
+  .display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 0.92;
+    color: var(--color-ink);
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -66,10 +76,10 @@
 }
 
 .eyebrow {
-  font-size: 0.65rem;
-  letter-spacing: 0.32em;
+  font-size: 0.64rem;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: var(--color-gold);
+  color: var(--color-mute);
   font-weight: 500;
 }
 

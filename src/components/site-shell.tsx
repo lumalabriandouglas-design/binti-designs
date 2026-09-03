@@ -26,8 +26,8 @@ export function SiteShell({
 
   return (
     <div className="min-h-dvh bg-paper text-ink">
-      <header className="sticky top-0 z-40 border-b border-line bg-paper">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+      <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6 md:px-10">
           <Link to="/" className="display text-2xl tracking-tight md:text-3xl">
             BINTI DESIGNS
           </Link>
@@ -80,9 +80,9 @@ export function SiteShell({
         </nav>
       </header>
       <main>{children}</main>
-      <footer className="mt-24 border-t border-line">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 md:grid-cols-3">
-          <p className="display text-4xl">BINTI DESIGNS</p>
+      <footer className="mt-32 border-t border-line">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-3 md:px-10">
+          <p className="text-4xl md:text-5xl">BINTI DESIGNS</p>
           <p className="text-sm leading-relaxed text-mute">
             {settings?.tagline ?? "Cut. Drape. Belong."}
           </p>

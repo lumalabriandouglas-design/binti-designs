@@ -31,10 +31,10 @@ function Home() {
   return (
     <SiteShell settings={data.settings}>
       <HeroSlider pieces={pieces} />
-      <section className="border-t border-line px-5 py-20">
-        <div className="mb-12 flex items-end justify-between">
-          <h2 className="display text-5xl">Now on the rack</h2>
-          <Link to="/collection" className="text-xs tracking-[0.24em] uppercase">
+      <section className="mx-auto max-w-7xl px-6 py-28 md:px-10">
+        <div className="mb-20 flex items-end justify-between gap-6">
+          <h2 className="text-5xl md:text-7xl">Now on the rack</h2>
+          <Link to="/collection" className="eyebrow text-ink">
             All looks
           </Link>
         </div>
@@ -67,11 +67,11 @@ function Home() {
         </div>
       </section>
       <section className="border-t border-line">
-        <div className="grid gap-16 px-5 py-20 md:grid-cols-2">
+        <div className="mx-auto grid max-w-7xl gap-20 px-6 py-28 md:grid-cols-2 md:px-10">
           <div>
             <p className="eyebrow">House</p>
-            <h2 className="display mt-4 text-5xl">A private floor in Kampala.</h2>
-            <p className="mt-6 max-w-md text-sm leading-relaxed text-mute">{data.settings?.about}</p>
+            <h2 className="mt-6 text-5xl md:text-7xl">A private floor in Kampala.</h2>
+            <p className="mt-8 max-w-md text-sm leading-relaxed text-mute">{data.settings?.about}</p>
           </div>
           <CallbackForm />
         </div>

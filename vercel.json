@@ -2,5 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "buildCommand": "npm run build",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "env": {
+    "VITE_FIREBASE_API_KEY": "AIzaSyBvsr0y-ji_VlLO0y2HTOBs1PwZuZfGcdQ",
+    "VITE_FIREBASE_AUTH_DOMAIN": "bunti-designs.firebaseapp.com",
+    "VITE_FIREBASE_PROJECT_ID": "bunti-designs",
+    "VITE_FIREBASE_STORAGE_BUCKET": "bunti-designs.firebasestorage.app",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "564678268643",
+    "VITE_FIREBASE_APP_ID": "1:564678268643:web:001520db99ea4789bb57d6",
+    "VITE_FIREBASE_MEASUREMENT_ID": "G-LS7HYB7ECW"
+  }
 }

@@ -5,9 +5,9 @@ import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
 
 const NAV = [
-  { to: "/collection", label: "Collection" },
-  { to: "/journal", label: "Journal" },
-  { to: "/atelier", label: "Maison" },
+  { to: "/collection", label: "Looks" },
+  { to: "/atelier", label: "House" },
+  { to: "/journal", label: "Notes" },
 ] as const;
 
 export function SiteShell({
@@ -21,45 +21,32 @@ export function SiteShell({
   const count = useBag((s) => s.items.reduce((n, i) => n + i.qty, 0));
   const { user } = useHouseUser();
   const house = isHouseAccount(user?.primaryEmail, settings?.admin_email);
-  const brand = settings?.brand_name ?? "BINTI DESIGNS";
   const wa = settings?.whatsapp?.replace(/[^\d+]/g, "") ?? "";
 
   return (
     <div className="min-h-dvh bg-paper text-ink">
-      <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-          <Link to="/" className="display text-2xl tracking-tight">
-            {brand}
-          </Link>
-          <nav className="hidden items-center gap-8 text-xs tracking-[0.22em] uppercase md:flex">
-            {NAV.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={pathname.startsWith(item.to) ? "text-ink" : "text-mute hover:text-ink"}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-4 text-xs tracking-[0.18em] uppercase">
+      <header className="border-b border-line">
+        <div className="flex items-center justify-between px-5 py-3 text-[0.62rem] tracking-[0.28em] uppercase text-mute">
+          <span>Kampala</span>
+          <span>Atelier</span>
+          <div className="flex items-center gap-4">
             {house ? (
-              <Link to="/atelier-studio" className="text-gold">
+              <Link to="/atelier-studio" className="text-ink">
                 Floor
               </Link>
             ) : null}
             <HouseSignedIn>
               {house ? null : (
-                <Link to="/account" className="text-mute hover:text-ink">
+                <Link to="/account" className="text-ink">
                   Saved
                 </Link>
               )}
-              <button type="button" className="text-mute hover:text-ink" onClick={() => void houseSignOut()}>
+              <button type="button" onClick={() => void houseSignOut()}>
                 Sign out
               </button>
             </HouseSignedIn>
             {user ? null : (
-              <Link to="/login" className="text-mute hover:text-ink">
+              <Link to="/login" className="text-ink">
                 Account
               </Link>
             )}
@@ -68,35 +55,43 @@ export function SiteShell({
             </Link>
           </div>
         </div>
-        <nav className="flex gap-5 overflow-x-auto border-t border-line px-5 py-3 text-xs tracking-[0.2em] uppercase md:hidden">
-          {NAV.map((item) => (
-            <Link key={item.to} to={item.to} className="shrink-0 text-mute">
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="px-5 py-8 text-center">
+          <Link to="/" className="display text-5xl md:text-7xl">
+            BINTI DESIGNS
+          </Link>
+          <nav className="mt-6 flex justify-center gap-8 text-[0.68rem] tracking-[0.28em] uppercase">
+            {NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={pathname.startsWith(item.to) ? "text-ink" : "text-mute"}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </header>
       <main>{children}</main>
       <footer className="mt-24 border-t border-line">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-3">
-          <div>
-            <p className="display text-4xl">{brand}</p>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-mute">
-              {settings?.tagline ?? "Cut. Drape. Belong."}
-            </p>
-          </div>
+        <div className="grid gap-8 px-5 py-14 md:grid-cols-3">
+          <p className="display text-4xl">BINTI DESIGNS</p>
+          <p className="text-sm leading-relaxed text-mute">
+            {settings?.tagline ?? "Cut. Drape. Belong."}
+          </p>
           <div className="text-sm leading-7 text-mute">
-            <p className="eyebrow mb-3 text-ink">Visit</p>
             {settings?.instagram ? (
               <a href={settings.instagram} target="_blank" rel="noreferrer">
                 Instagram
               </a>
             ) : null}
-            <br />
             {settings?.drape_url ? (
-              <a href={settings.drape_url} target="_blank" rel="noreferrer">
-                Drapé Collective
-              </a>
+              <>
+                <br />
+                <a href={settings.drape_url} target="_blank" rel="noreferrer">
+                  Drapé Collective
+                </a>
+              </>
             ) : null}
             {wa ? (
               <>
@@ -106,14 +101,6 @@ export function SiteShell({
                 </a>
               </>
             ) : null}
-          </div>
-          <div className="text-sm leading-7 text-mute">
-            <p className="eyebrow mb-3 text-ink">House</p>
-            <Link to="/atelier">The maison</Link>
-            <br />
-            <Link to="/collection">Collection</Link>
-            <br />
-            <Link to="/login">Client account</Link>
           </div>
         </div>
       </footer>

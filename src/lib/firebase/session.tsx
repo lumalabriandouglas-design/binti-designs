@@ -9,9 +9,11 @@ import {
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
+  getRedirectResult,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   updateProfile,
   type User,
@@ -52,6 +54,7 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
       setPending(false);
       return;
     }
+    void getRedirectResult(auth).catch(() => undefined);
     return onAuthStateChanged(auth, (next) => {
       setUser(mapUser(next));
       setPending(false);
@@ -105,17 +108,28 @@ export async function houseSignUp(email: string, password: string, name: string)
 export async function houseGoogle() {
   const auth = firebaseAuth();
   if (!auth) throw new Error("Accounts are not ready.");
-  await signInWithPopup(auth, new GoogleAuthProvider());
+  const provider = new GoogleAuthProvider();
+  try {
+    await signInWithPopup(auth, provider);
+  } catch {
+    await signInWithRedirect(auth, provider);
+  }
 }
 
 export async function houseGoogleStrict() {
   const auth = firebaseAuth();
   if (!auth) throw new Error("Accounts are not ready.");
-  const cred = await signInWithPopup(auth, new GoogleAuthProvider());
-  const email = cred.user.email?.trim().toLowerCase();
-  if (email !== HOUSE_EMAIL) {
-    await firebaseSignOut(auth);
-    throw new Error("Access denied.");
+  const provider = new GoogleAuthProvider();
+  try {
+    const cred = await signInWithPopup(auth, provider);
+    const email = cred.user.email?.trim().toLowerCase();
+    if (email !== HOUSE_EMAIL) {
+      await firebaseSignOut(auth);
+      throw new Error("Access denied.");
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message === "Access denied.") throw err;
+    await signInWithRedirect(auth, provider);
   }
 }
 

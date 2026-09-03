@@ -24,65 +24,56 @@ function Home() {
           subtitle: p.subtitle,
           cover_url: p.cover_url,
           price_cents: p.price_cents,
-          currency: p.currency,
+          currency: p.currency || "UGX",
           sold_out: p.sold_out,
         }));
 
   return (
     <SiteShell settings={data.settings}>
       <HeroSlider pieces={pieces} />
-      <section className="mx-auto max-w-6xl px-5 py-24">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow">Season</p>
-            <h2 className="display mt-3 text-5xl md:text-7xl">The rack</h2>
-          </div>
-          <Link to="/collection" className="eyebrow text-ink">
+      <section className="border-t border-line px-5 py-20">
+        <div className="mb-12 flex items-end justify-between">
+          <h2 className="display text-5xl">Now on the rack</h2>
+          <Link to="/collection" className="text-xs tracking-[0.24em] uppercase">
             All looks
           </Link>
         </div>
-        <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-16 md:grid-cols-12">
-          {pieces.slice(0, 6).map((piece, index) => (
+        <div className="space-y-20">
+          {pieces.slice(0, 4).map((piece, index) => (
             <motion.div
               key={piece.slug + index}
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6 }}
-              className={index % 3 === 0 ? "md:col-span-7" : "md:col-span-5"}
+              viewport={{ once: true }}
+              className={`grid items-end gap-8 md:grid-cols-2 ${index % 2 ? "md:[&>a]:order-2" : ""}`}
             >
-              <Link to="/piece/$slug" params={{ slug: piece.slug }}>
-                <div className="bg-paper-2">
-                  <img
-                    src={piece.cover_url}
-                    alt={piece.title}
-                    className="w-full object-contain"
-                  />
-                </div>
-                <div className="mt-4 flex items-baseline justify-between">
-                  <div>
-                    <p className="display text-2xl">{piece.title}</p>
-                    <p className="text-sm text-mute">{piece.subtitle}</p>
-                  </div>
-                  {piece.sold_out ? <span className="eyebrow">Reserved</span> : null}
-                </div>
+              <Link to="/piece/$slug" params={{ slug: piece.slug }} className="bg-paper-2">
+                <img src={piece.cover_url} alt={piece.title} className="w-full object-contain" />
               </Link>
+              <div className="pb-4">
+                <p className="eyebrow">{piece.sold_out ? "Reserved" : "Available"}</p>
+                <h3 className="display mt-4 text-4xl md:text-6xl">{piece.title}</h3>
+                <p className="mt-3 text-mute">{piece.subtitle}</p>
+                <Link
+                  to="/piece/$slug"
+                  params={{ slug: piece.slug }}
+                  className="mt-8 inline-block text-xs tracking-[0.24em] uppercase"
+                >
+                  View
+                </Link>
+              </div>
             </motion.div>
           ))}
         </div>
       </section>
-      <section className="border-t border-line bg-paper text-ink">
-        <div className="mx-auto grid max-w-6xl gap-16 px-5 py-24 md:grid-cols-2">
+      <section className="border-t border-line">
+        <div className="grid gap-16 px-5 py-20 md:grid-cols-2">
           <div>
-            <p className="eyebrow">Maison</p>
-            <h2 className="display mt-4 text-5xl text-ink">Cut close.<br />Held still.</h2>
-            <p className="mt-6 max-w-md text-sm leading-relaxed text-mute">
-              {data.settings?.about}
-            </p>
+            <p className="eyebrow">House</p>
+            <h2 className="display mt-4 text-5xl">A private floor in Kampala.</h2>
+            <p className="mt-6 max-w-md text-sm leading-relaxed text-mute">{data.settings?.about}</p>
           </div>
-          <div>
-            <CallbackForm />
-          </div>
+          <CallbackForm />
         </div>
       </section>
     </SiteShell>

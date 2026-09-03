@@ -11,11 +11,6 @@ export function formatMoney(cents: number, currency = "UGX") {
   });
   return `${currency} ${value}`;
 }
-  const value = (cents / 100).toLocaleString("en-KE", {
-    maximumFractionDigits: 0,
-  });
-  return `${currency} ${value}`;
-}
 
 export function slugify(value: string) {
   return value

@@ -8,8 +8,11 @@ import {
   r2SignPut,
   resolveMediaRef,
 } from "@/lib/server/r2";
+import { firebaseAuthMiddleware } from "@/lib/server/firebase-middleware";
+import { isHouseEmail } from "@/lib/server/boutique";
 
-async function assertStudio(token: string) {
+async function assertStudio(token?: string) {
+  if (!token) throw new Error("Studio session expired.");
   if (useMemoryDb()) {
     if (!memory().tokens.has(token)) throw new Error("Studio session expired.");
     return;
@@ -21,21 +24,27 @@ async function assertStudio(token: string) {
   if (!rows[0]) throw new Error("Studio session expired.");
 }
 
+async function assertHouse(email: string | null | undefined, token?: string) {
+  if (isHouseEmail(email)) return;
+  await assertStudio(token);
+}
+
 function safeName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 48) || "look";
 }
 
 export const requestMediaPut = createServerFn({ method: "POST" })
+  .middleware([firebaseAuthMiddleware])
   .validator(
     z.object({
-      token: z.string(),
+      token: z.string().optional(),
       filename: z.string(),
       contentType: z.string(),
       kind: z.enum(["image", "video"]),
     }),
   )
-  .handler(async ({ data }) => {
-    await assertStudio(data.token);
+  .handler(async ({ data, context }) => {
+    await assertHouse((context as { email?: string | null }).email, data.token);
     if (!r2Configured()) {
       return { ok: false as const, error: "Archive is not connected." };
     }
@@ -45,16 +54,17 @@ export const requestMediaPut = createServerFn({ method: "POST" })
   });
 
 export const storeMedia = createServerFn({ method: "POST" })
+  .middleware([firebaseAuthMiddleware])
   .validator(
     z.object({
-      token: z.string(),
+      token: z.string().optional(),
       filename: z.string(),
       contentType: z.string().default("image/jpeg"),
       dataUrl: z.string().min(32),
     }),
   )
-  .handler(async ({ data }) => {
-    await assertStudio(data.token);
+  .handler(async ({ data, context }) => {
+    await assertHouse((context as { email?: string | null }).email, data.token);
     const match = data.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
     if (!match) throw new Error("That file could not be packed.");
     const contentType = match[1] || data.contentType;

@@ -20,6 +20,7 @@ import {
 } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
 import { compressImageFile, compressVideoFile, parseGallery } from "@/lib/media";
+import { uploadFilm, uploadStill } from "@/lib/client/upload-media";
 import { Phone } from "lucide-react";
 import { GoogleMark, InstagramMark, WhatsAppMark } from "@/components/brand-marks";
 import { BananaMark, MinionPeek } from "@/components/minion";
@@ -448,11 +449,33 @@ function LookForm({
         });
         return;
       }
-      await saveLook({
-        ...payload,
-        id: existing && !existing.id.startsWith("local-") ? existing.id : undefined,
-        created_at: existing?.created_at,
-      });
+      try {
+        await saveLook({
+          ...payload,
+          id: existing && !existing.id.startsWith("local-") ? existing.id : undefined,
+          created_at: existing?.created_at,
+        });
+      } catch (err) {
+        if (!token) throw err;
+        const frames = gallery.map((url) => ({ thumb: url, display: url, master: url }));
+        await savePiece({
+          data: {
+            token,
+            slug: payload.slug,
+            title,
+            subtitle,
+            description,
+            price_cents: payload.price_cents,
+            category,
+            cover_url: cover,
+            gallery: JSON.stringify(frames),
+            video_url: video,
+            caption,
+            status: "published",
+            publish_to_drape: false,
+          },
+        });
+      }
     },
     onSuccess: onSaved,
     onError: (err) => setError(err instanceof Error ? err.message : "Could not save."),
@@ -484,10 +507,18 @@ function LookForm({
           onChange={async (e) => {
             const files = Array.from(e.target.files ?? []).slice(0, 8 - gallery.length);
             for (const file of files) {
-              setBusy(`Compressing ${file.name}…`);
-              const url = await compressImageFile(file);
-              setCover((current) => current || url);
-              setGallery((current) => [...current, url]);
+              setBusy(`Sending ${file.name} to the archive…`);
+              try {
+                const stored = await uploadStill(token || "house", file);
+                const url = stored.display || stored.preview || stored.master;
+                setCover((current) => current || url);
+                setGallery((current) => [...current, url]);
+              } catch (err) {
+                const url = await compressImageFile(file);
+                setCover((current) => current || url);
+                setGallery((current) => [...current, url]);
+                setError(err instanceof Error ? err.message : "Archive failed; kept a local still.");
+              }
             }
             setBusy("");
             e.target.value = "";
@@ -530,10 +561,14 @@ function LookForm({
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            setBusy("Compressing film…");
-            const blob = await compressVideoFile(file);
-            const url = await blobToDataUrl(blob);
-            setVideo(url);
+            setBusy("Sending film to the archive…");
+            try {
+              const url = await uploadFilm(token || "house", file);
+              setVideo(url);
+            } catch {
+              const blob = await compressVideoFile(file);
+              setVideo(await blobToDataUrl(blob));
+            }
             setBusy("");
             e.target.value = "";
           }}

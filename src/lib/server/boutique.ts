@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getSql } from "@/lib/db";
-import { authMiddleware } from "@/lib/auth/middleware";
+import { firebaseAuthMiddleware } from "@/lib/server/firebase-middleware";
 import { memory, useMemoryDb } from "@/lib/server/store";
 
 export type Piece = {
@@ -462,7 +462,7 @@ export const markDrapePublished = createServerFn({ method: "POST" })
   });
 
 export const toggleWishlist = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
+  .middleware([firebaseAuthMiddleware])
   .validator(z.object({ pieceId: z.number() }))
   .handler(async ({ data, context }) => {
     if (useMemoryDb()) {
@@ -497,7 +497,7 @@ export const toggleWishlist = createServerFn({ method: "POST" })
   });
 
 export const getMyWishlist = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
+  .middleware([firebaseAuthMiddleware])
   .handler(async ({ context }) => {
     if (useMemoryDb()) {
       const ids = memory().wishlists.get(context.userId) ?? [];

@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { SignedIn, UserButton } from "@/lib/auth/gates";
+import { HouseSignedIn, houseSignOut, useHouseUser } from "@/lib/firebase/session";
 import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
 
@@ -42,15 +42,15 @@ export function SiteShell({
             ))}
           </nav>
           <div className="flex items-center gap-4 text-[0.72rem] tracking-[0.18em] uppercase">
-            <Link to="/login" className="text-mute hover:text-ink">
-              Account
-            </Link>
-            <SignedIn>
+            <HouseSignedIn>
               <Link to="/account" className="text-mute hover:text-ink">
                 Saved
               </Link>
-              <UserButton />
-            </SignedIn>
+              <button type="button" className="text-mute hover:text-ink" onClick={() => void houseSignOut()}>
+                Sign out
+              </button>
+            </HouseSignedIn>
+            <AccountLink />
             <Link to="/bag" className="text-ink">
               Bag{count ? ` ${count}` : ""}
             </Link>
@@ -104,5 +104,15 @@ export function SiteShell({
         </div>
       </footer>
     </div>
+  );
+}
+
+function AccountLink() {
+  const { user } = useHouseUser();
+  if (user) return null;
+  return (
+    <Link to="/login" className="text-mute hover:text-ink">
+      Account
+    </Link>
   );
 }

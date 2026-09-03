@@ -11,7 +11,7 @@ import {
 import { useBag } from "@/lib/bag";
 import { formatMoney } from "@/lib/utils";
 import { parseGallery } from "@/lib/media";
-import { SignedIn, SignedOut } from "@/lib/auth/gates";
+import { HouseSignedIn, HouseSignedOut } from "@/lib/firebase/session";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
 
@@ -142,7 +142,7 @@ function PieceView({ piece }: { piece: Piece }) {
           >
             Add to bag
           </button>
-          <SignedIn>
+          <HouseSignedIn>
             <button
               type="button"
               className="border border-line px-6 py-3 text-[0.7rem] tracking-[0.2em] uppercase"
@@ -150,15 +150,15 @@ function PieceView({ piece }: { piece: Piece }) {
             >
               Save
             </button>
-          </SignedIn>
-          <SignedOut>
+          </HouseSignedIn>
+          <HouseSignedOut>
             <Link
               to="/login"
               className="border border-line px-6 py-3 text-[0.7rem] tracking-[0.2em] uppercase"
             >
               Save with account
             </Link>
-          </SignedOut>
+          </HouseSignedOut>
         </div>
         {note ? <p className="mt-4 text-sm text-mute">{note}</p> : null}
         <p className="mt-10 text-xs leading-relaxed text-mute">

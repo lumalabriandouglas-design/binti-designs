@@ -14,6 +14,8 @@ Minions stay in the studio only.
 
 Looks live in the Cloudflare R2 archive (`R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`). Never commit those values.
 
+Client accounts use Firebase Auth (`VITE_FIREBASE_*`). Enable Email/Password and Google in the Firebase console, and add the live site domain under Authorized domains. Media does not use Firebase Storage.
+
 ## House notes
 
 - WhatsApp and payment number live under **House**

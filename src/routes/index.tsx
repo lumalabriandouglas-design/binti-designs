@@ -71,16 +71,16 @@ function Home() {
           ))}
         </div>
       </section>
-      <section className="border-t border-line bg-ink text-paper">
+      <section className="border-t border-line bg-paper text-ink">
         <div className="mx-auto grid max-w-6xl gap-16 px-5 py-24 md:grid-cols-2">
           <div>
             <p className="eyebrow">Maison</p>
-            <h2 className="display mt-4 text-5xl text-paper">Cut close.<br />Held still.</h2>
-            <p className="mt-6 max-w-md text-sm leading-relaxed text-paper/65">
+            <h2 className="display mt-4 text-5xl text-ink">Cut close.<br />Held still.</h2>
+            <p className="mt-6 max-w-md text-sm leading-relaxed text-mute">
               {data.settings?.about}
             </p>
           </div>
-          <div className="text-paper">
+          <div>
             <CallbackForm />
           </div>
         </div>

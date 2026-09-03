@@ -271,7 +271,7 @@ function LookForm({
       />
       <div className="grid grid-cols-2 gap-3">
         <input
-          placeholder="Price KES"
+          placeholder="Price UGX"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           className="border border-white/15 bg-transparent px-3 py-3 text-sm text-paper outline-none"

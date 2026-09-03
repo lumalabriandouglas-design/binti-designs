@@ -266,7 +266,7 @@ export const savePiece = createServerFn({ method: "POST" })
         subtitle: data.subtitle,
         description: data.description,
         price_cents: data.price_cents,
-        currency: "KES",
+        currency: "UGX",
         category: data.category,
         cover_url: data.cover_url,
         gallery: data.gallery,

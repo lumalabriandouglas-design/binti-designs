@@ -5,7 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatMoney(cents: number, currency = "KES") {
+export function formatMoney(cents: number, currency = "UGX") {
+  const value = (cents / 100).toLocaleString("en-UG", {
+    maximumFractionDigits: 0,
+  });
+  return `${currency} ${value}`;
+}
   const value = (cents / 100).toLocaleString("en-KE", {
     maximumFractionDigits: 0,
   });

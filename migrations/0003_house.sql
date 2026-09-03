@@ -8,6 +8,8 @@ where id = 1 and (admin_email is null or admin_email = '');
 alter table pieces
   add column if not exists sold_out boolean not null default false;
 
+update pieces set currency = 'UGX' where currency = 'KES' or currency is null;
+
 create table if not exists callbacks (
   id serial primary key,
   name text not null default '',

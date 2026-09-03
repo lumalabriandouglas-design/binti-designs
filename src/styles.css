@@ -3,13 +3,13 @@
 @theme {
   --font-display: "Playfair Display", "Times New Roman", serif;
   --font-sans: "Inter", "Helvetica Neue", sans-serif;
-  --color-paper: #f7f4ef;
-  --color-paper-2: #efe8dc;
-  --color-ink: #090909;
+  --color-paper: #ffffff;
+  --color-paper-2: #f4f4f4;
+  --color-ink: #0a0a0a;
   --color-ink-soft: #1a1a1a;
-  --color-mute: #7a736a;
-  --color-line: #ddd6cb;
-  --color-gold: #c4b08a;
+  --color-mute: #6b6b6b;
+  --color-line: #e6e6e6;
+  --color-gold: #8a7a58;
   --color-banana: #f0d24b;
   --color-minion: #2b3a8f;
   --radius-sm: 0px;
@@ -19,8 +19,8 @@
 
 @layer base {
   html {
-    background: var(--color-ink);
-    color: var(--color-paper);
+    background: #ffffff;
+    color: var(--color-ink);
   }
   body {
     margin: 0;

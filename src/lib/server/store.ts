@@ -31,7 +31,7 @@ function look(
     subtitle,
     description,
     price_cents: price,
-    currency: "KES",
+    currency: "UGX",
     category: "Set",
     cover_url: "/looks/wrap-set.jpg",
     gallery: "[]",

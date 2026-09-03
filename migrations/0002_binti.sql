@@ -23,7 +23,7 @@ create table if not exists pieces (
   subtitle text not null default '',
   description text not null default '',
   price_cents integer not null default 0,
-  currency text not null default 'KES',
+  currency text not null default 'UGX',
   category text not null default 'Look',
   cover_url text not null,
   gallery text not null default '[]',

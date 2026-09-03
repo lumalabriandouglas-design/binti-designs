@@ -236,7 +236,7 @@ function LookForm({
         className="h-24 w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"
       />
       <input
-        placeholder="Price KES"
+        placeholder="Price UGX"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
         className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm outline-none"

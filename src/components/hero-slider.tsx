@@ -27,7 +27,7 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
 
   if (!slides.length) {
     return (
-      <section className="flex min-h-[92dvh] items-end bg-ink px-6 py-20 text-paper">
+      <section className="flex min-h-[92dvh] items-end bg-paper px-6 py-20 text-ink">
         <div>
           <p className="eyebrow">Maison</p>
           <h1 className="display mt-6 text-7xl md:text-9xl">BINTI<br />DESIGNS</h1>
@@ -39,7 +39,7 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
   const current = slides[index] ?? slides[0];
 
   return (
-    <section className="relative min-h-[92dvh] overflow-hidden bg-ink text-paper">
+    <section className="relative min-h-[92dvh] overflow-hidden bg-paper text-ink">
       <AnimatePresence mode="sync">
         <motion.img
           key={current.slug + current.cover_url}
@@ -49,10 +49,10 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 h-full w-full object-contain bg-ink"
+          className="absolute inset-0 h-full w-full object-contain bg-paper"
         />
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-ink/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-paper via-transparent to-transparent" />
       <div className="relative z-10 mx-auto flex min-h-[92dvh] max-w-6xl flex-col justify-end px-5 py-16">
         <motion.div
           key={current.slug}
@@ -61,28 +61,28 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
           transition={{ duration: 0.7 }}
         >
           <p className="eyebrow">Binti Designs</p>
-          <h1 className="display mt-5 max-w-4xl text-6xl text-paper md:text-8xl">
+          <h1 className="display mt-5 max-w-4xl text-6xl text-ink md:text-8xl">
             {current.title}
           </h1>
           {current.subtitle ? <p className="mt-4 text-lg text-gold">{current.subtitle}</p> : null}
-          <p className="mt-4 text-sm text-paper/70">
+          <p className="mt-4 text-sm text-mute">
             {current.sold_out
               ? "Reserved"
               : current.price_cents
-                ? formatMoney(current.price_cents, current.currency || "KES")
+                ? formatMoney(current.price_cents, current.currency || "UGX")
                 : ""}
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
               to="/piece/$slug"
               params={{ slug: current.slug }}
-              className="bg-paper px-7 py-3 text-xs tracking-[0.24em] uppercase text-ink"
+              className="bg-ink px-7 py-3 text-xs tracking-[0.24em] uppercase text-paper"
             >
               The look
             </Link>
             <Link
               to="/collection"
-              className="border border-gold/50 px-7 py-3 text-xs tracking-[0.24em] uppercase text-paper"
+              className="border border-line px-7 py-3 text-xs tracking-[0.24em] uppercase text-ink"
             >
               Collection
             </Link>
@@ -95,7 +95,7 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
                 key={slide.slug + i}
                 type="button"
                 aria-label={`Look ${i + 1}`}
-                className={`h-px ${i === index ? "w-12 bg-gold" : "w-8 bg-paper/30"}`}
+                className={`h-px ${i === index ? "w-12 bg-ink" : "w-8 bg-line"}`}
                 onClick={() => setIndex(i)}
               />
             ))}

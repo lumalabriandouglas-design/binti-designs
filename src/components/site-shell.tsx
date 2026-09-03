@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CircleUser, ShoppingBag } from "lucide-react";
@@ -6,7 +7,6 @@ import { isHouseAccount } from "@/lib/house";
 import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
 import { getHouseNotes } from "@/lib/firebase/catalog";
-import { HouseCurtain } from "@/components/house-curtain";
 import { HouseContact, mergeHouse } from "@/components/house-contact";
 
 const NAV = [
@@ -18,9 +18,11 @@ const NAV = [
 export function SiteShell({
   children,
   settings,
+  overlay = false,
 }: {
   children: React.ReactNode;
   settings?: Settings | null;
+  overlay?: boolean;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const count = useBag((s) => s.items.reduce((n, i) => n + i.qty, 0));
@@ -28,28 +30,42 @@ export function SiteShell({
   const houseAccount = isHouseAccount(user?.primaryEmail, settings?.admin_email);
   const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
   const house = mergeHouse(settings, notes.data);
-  const hidden = pathname.startsWith("/atelier-studio");
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 18);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const float = overlay && !scrolled;
+  const ink = float ? "text-[#f6f1ea]" : "text-ink";
+  const mute = float ? "text-[#f6f1ea]/70" : "text-mute";
 
   return (
     <div className="min-h-dvh bg-paper text-ink">
-      {hidden ? null : <HouseCurtain />}
-      <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6 md:px-10">
-          <Link to="/" className="display text-2xl tracking-tight md:text-3xl">
+      <header
+        className={`fixed inset-x-0 top-0 z-40 transition-colors duration-500 ${
+          float ? "bg-transparent" : "border-b border-line bg-paper/92 backdrop-blur-sm"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-5 md:px-10">
+          <Link to="/" className={`display text-2xl tracking-tight md:text-3xl ${ink}`}>
             BINTI DESIGNS
           </Link>
-          <nav className="hidden items-center gap-8 text-[0.68rem] tracking-[0.24em] uppercase md:flex">
+          <nav className="hidden items-center gap-8 text-[11px] tracking-[0.18em] uppercase md:flex">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className={pathname.startsWith(item.to) ? "text-ink" : "text-mute"}
+                className={pathname.startsWith(item.to) ? ink : mute}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-4">
+          <div className={`flex items-center gap-4 ${ink}`}>
             {houseAccount ? (
               <Link to="/atelier-studio" className="text-[0.62rem] tracking-[0.2em] uppercase text-mute">
                 Floor
@@ -86,7 +102,7 @@ export function SiteShell({
           ))}
         </nav>
       </header>
-      <main>{children}</main>
+      <main className={overlay ? "" : "pt-24"}>{children}</main>
       <footer className="mt-32 border-t border-line">
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-3 md:px-10">
           <p className="text-4xl md:text-5xl">BINTI DESIGNS</p>

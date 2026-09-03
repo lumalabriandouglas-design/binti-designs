@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { DrapeReveal } from "@/components/drape-reveal";
 import { SiteShell } from "@/components/site-shell";
 import { HeroSlider } from "@/components/hero-slider";
 import { CallbackForm } from "@/components/callback-form";
@@ -29,7 +30,8 @@ function Home() {
         }));
 
   return (
-    <SiteShell settings={data.settings}>
+    <SiteShell settings={data.settings} overlay>
+      <DrapeReveal house="BINTI DESIGNS">
       <HeroSlider pieces={pieces} />
       <section className="mx-auto max-w-7xl px-6 py-28 md:px-10">
         <div className="mb-20 flex items-end justify-between gap-6">
@@ -76,6 +78,7 @@ function Home() {
           <CallbackForm />
         </div>
       </section>
+      </DrapeReveal>
     </SiteShell>
   );
 }

@@ -9,6 +9,7 @@ import {
   houseSignUp,
   useHouseUser,
 } from "@/lib/firebase/session";
+import { GoogleMark } from "@/components/brand-marks";
 import { isHouseAccount } from "@/lib/house";
 import { getPublicCatalog } from "@/lib/server/boutique";
 import { listLooks } from "@/lib/firebase/catalog";
@@ -86,8 +87,9 @@ function Login() {
                     setMessage(err instanceof Error ? err.message : "Google sign-in failed.");
                   }
                 }}
-                className="w-full border border-ink px-4 py-3 text-xs tracking-[0.2em] uppercase"
+                className="flex w-full items-center justify-center gap-3 border border-ink px-4 py-3 text-xs tracking-[0.2em] uppercase"
               >
+                <GoogleMark className="h-4 w-4" />
                 Continue with Google
               </button>
               <div className="flex items-center gap-4 py-2">

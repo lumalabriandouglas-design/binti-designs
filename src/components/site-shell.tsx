@@ -7,6 +7,7 @@ import { isHouseAccount } from "@/lib/house";
 import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
 import { getHouseNotes } from "@/lib/firebase/catalog";
+import { InstagramMark } from "@/components/brand-marks";
 import { HouseContact, mergeHouse } from "@/components/house-contact";
 
 const NAV = [
@@ -109,7 +110,13 @@ export function SiteShell({
           <p className="text-sm leading-relaxed text-mute">{house.tagline}</p>
           <div className="text-sm leading-7 text-mute">
             {house.instagram ? (
-              <a href={house.instagram} target="_blank" rel="noreferrer">
+              <a
+                href={house.instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-ink"
+              >
+                <InstagramMark className="h-4 w-4" />
                 Instagram
               </a>
             ) : null}

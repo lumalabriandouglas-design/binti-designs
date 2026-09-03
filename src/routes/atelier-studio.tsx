@@ -20,6 +20,7 @@ import {
 } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
 import { compressImageFile, compressVideoFile, parseGallery } from "@/lib/media";
+import { GoogleMark, InstagramMark, WhatsAppMark } from "@/components/brand-marks";
 import { BananaMark, MinionPeek } from "@/components/minion";
 import {
   deletePiece,
@@ -94,7 +95,7 @@ function StudioDoor({
       </p>
       <button
         type="button"
-        className="mt-10 w-full border border-ink px-6 py-3 text-xs tracking-[0.24em] uppercase"
+        className="mt-10 flex w-full items-center justify-center gap-3 border border-ink px-6 py-3 text-xs tracking-[0.24em] uppercase"
         onClick={async () => {
           setDenied("");
           try {
@@ -104,6 +105,7 @@ function StudioDoor({
           }
         }}
       >
+        <GoogleMark className="h-4 w-4" />
         Continue with Google
       </button>
       <form
@@ -667,7 +669,11 @@ function HouseBook({
         ] as const
       ).map(([label, value, set]) => (
         <label key={label} className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
-          {label}
+          <span className="flex items-center gap-2">
+            {label === "WhatsApp" ? <WhatsAppMark className="h-3.5 w-3.5 text-[#25D366]" /> : null}
+            {label === "Instagram URL" ? <InstagramMark className="h-3.5 w-3.5" /> : null}
+            {label}
+          </span>
           <input
             value={value}
             onChange={(e) => set(e.target.value)}

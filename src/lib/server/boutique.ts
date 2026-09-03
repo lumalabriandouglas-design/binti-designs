@@ -56,6 +56,39 @@ export type OrderRow = {
   created_at: string;
 };
 
+async function hydratePiece(piece: Piece): Promise<Piece> {
+  const { resolveMediaRef } = await import("@/lib/server/r2");
+  const cover_url = await resolveMediaRef(piece.cover_url);
+  const video_url = piece.video_url ? await resolveMediaRef(piece.video_url) : "";
+  let gallery = piece.gallery;
+  try {
+    const items = JSON.parse(piece.gallery || "[]") as unknown;
+    if (Array.isArray(items)) {
+      const next = [];
+      for (const item of items) {
+        if (typeof item === "string") {
+          next.push(await resolveMediaRef(item));
+        } else if (item && typeof item === "object") {
+          const row = item as Record<string, string>;
+          next.push({
+            thumb: await resolveMediaRef(row.thumb || row.display || ""),
+            display: await resolveMediaRef(row.display || row.thumb || ""),
+            master: await resolveMediaRef(row.master || row.display || row.thumb || ""),
+          });
+        }
+      }
+      gallery = JSON.stringify(next);
+    }
+  } catch {
+    gallery = piece.gallery;
+  }
+  return { ...piece, cover_url, video_url, gallery };
+}
+
+async function hydratePieces(pieces: Piece[]) {
+  return Promise.all(pieces.map(hydratePiece));
+}
+
 async function requireStudio(token: string) {
   if (useMemoryDb()) {
     if (!memory().tokens.has(token)) {
@@ -75,7 +108,7 @@ export const getPublicCatalog = createServerFn({ method: "GET" }).handler(
     if (useMemoryDb()) {
       const m = memory();
       return {
-        pieces: m.pieces.filter((p) => p.status === "published"),
+        pieces: await hydratePieces(m.pieces.filter((p) => p.status === "published")),
         settings: m.settings,
         journal: m.journal,
       };
@@ -96,14 +129,14 @@ export const getPublicCatalog = createServerFn({ method: "GET" }).handler(
         select * from journal_entries order by created_at desc limit 24
       `;
       return {
-        pieces,
+        pieces: await hydratePieces(pieces),
         settings: settingsRows[0] ?? null,
         journal,
       };
     } catch {
       const m = memory();
       return {
-        pieces: m.pieces.filter((p) => p.status === "published"),
+        pieces: await hydratePieces(m.pieces.filter((p) => p.status === "published")),
         settings: m.settings,
         journal: m.journal,
       };
@@ -115,16 +148,15 @@ export const getPieceBySlug = createServerFn({ method: "GET" })
   .validator(z.object({ slug: z.string() }))
   .handler(async ({ data }) => {
     if (useMemoryDb()) {
-      return (
-        memory().pieces.find((p) => p.slug === data.slug && p.status === "published") ??
-        null
-      );
+      const piece =
+        memory().pieces.find((p) => p.slug === data.slug && p.status === "published") ?? null;
+      return piece ? hydratePiece(piece) : null;
     }
     const sql = await getSql();
     const rows = await sql<Piece>`
       select * from pieces where slug = ${data.slug} and status = 'published' limit 1
     `;
-    return rows[0] ?? null;
+    return rows[0] ? hydratePiece(rows[0]) : null;
   });
 
 export const unlockStudio = createServerFn({ method: "POST" })

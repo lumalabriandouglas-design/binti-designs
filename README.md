@@ -6,11 +6,13 @@ Luxury editorial showroom for BINTI DESIGNS. Public floor is quiet. The studio i
 
 1. Open the site footer → **Her studio — upload looks**
 2. Enter pin `2408` (change it under House after the first visit)
-3. **Upload a look** — photo compresses on the way in, optional video, caption, price
+3. **Upload a look** — up to eight stills. The house compresses photographs and film; the floor shows a sharp display still, then a master still on a large screen.
 4. Tick **Show on the public site**
 5. Tick **Also send to Drapé Collective** to queue the piece to her existing showroom without a second upload
 
 Minions stay in the studio only.
+
+Looks live in the Cloudflare R2 archive (`R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`). Never commit those values.
 
 ## House notes
 

@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getStudioData, saveJournal, savePiece, type Piece } from "@/lib/server/boutique";
 import { getStudioToken } from "@/lib/bag";
-import { compressImageFile, readVideoFile } from "@/lib/media";
+import { MAX_STILLS, parseGallery } from "@/lib/media";
+import { resolveMedia } from "@/lib/server/upload";
+import { uploadFilm, uploadStill, type StoredStill } from "@/lib/client/upload-media";
 import { slugify } from "@/lib/utils";
 import { BananaLoader } from "@/components/minion";
 
@@ -48,6 +50,28 @@ function UploadPage() {
   );
 }
 
+function stillsFromPiece(piece?: Piece): StoredStill[] {
+  if (!piece) return [];
+  const gallery = parseGallery(piece.gallery);
+  const fromGallery = gallery
+    .map((item) => {
+      if (typeof item === "string") {
+        return { thumb: item, display: item, master: item };
+      }
+      return {
+        thumb: item.thumb || item.display || "",
+        display: item.display || item.thumb || "",
+        master: item.master || item.display || item.thumb || "",
+      };
+    })
+    .filter((item) => item.display);
+  if (fromGallery.length) return fromGallery;
+  if (piece.cover_url) {
+    return [{ thumb: piece.cover_url, display: piece.cover_url, master: piece.cover_url }];
+  }
+  return [];
+}
+
 function LookForm({
   token,
   existing,
@@ -65,8 +89,23 @@ function LookForm({
     existing ? String(Math.round(existing.price_cents / 100)) : "",
   );
   const [category, setCategory] = useState(existing?.category ?? "Set");
-  const [cover, setCover] = useState(existing?.cover_url ?? "");
+  const [stills, setStills] = useState<StoredStill[]>(() => stillsFromPiece(existing));
   const [video, setVideo] = useState(existing?.video_url ?? "");
+
+  useEffect(() => {
+    const seed = stillsFromPiece(existing);
+    if (!seed.length) return;
+    void (async () => {
+      const resolved: StoredStill[] = [];
+      for (const still of seed) {
+        const preview = still.display.startsWith("r2:")
+          ? await resolveMedia({ data: { ref: still.display } })
+          : still.display;
+        resolved.push({ ...still, preview });
+      }
+      setStills(resolved);
+    })();
+  }, [existing]);
   const [status, setStatus] = useState<"draft" | "published">(
     (existing?.status as "draft" | "published") ?? "published",
   );
@@ -87,8 +126,10 @@ function LookForm({
           caption,
           price_cents: Math.max(0, Math.round(Number(price || 0) * 100)),
           category,
-          cover_url: cover,
-          gallery: "[]",
+          cover_url: stills[0]?.display || "",
+          gallery: JSON.stringify(
+            stills.map(({ thumb, display, master }) => ({ thumb, display, master })),
+          ),
           video_url: video,
           status,
           publish_to_drape: drape,
@@ -98,12 +139,23 @@ function LookForm({
     onError: (e) => setErr(e.message),
   });
 
-  async function onImage(file?: File) {
-    if (!file) return;
+  async function onImages(files: FileList | null) {
+    if (!files?.length) return;
     setErr("");
-    setBusy("Compressing still…");
+    const room = MAX_STILLS - stills.length;
+    const picked = Array.from(files).slice(0, room);
+    if (!picked.length) {
+      setErr(`A look holds ${MAX_STILLS} stills.`);
+      return;
+    }
     try {
-      setCover(await compressImageFile(file));
+      for (const [index, file] of picked.entries()) {
+        setBusy(`Compressing still ${stills.length + index + 1} of ${stills.length + picked.length}…`);
+        const stored = await uploadStill(token, file);
+        setStills((current) =>
+          current.length >= MAX_STILLS ? current : [...current, stored],
+        );
+      }
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Image failed.");
     } finally {
@@ -114,9 +166,9 @@ function LookForm({
   async function onVideo(file?: File) {
     if (!file) return;
     setErr("");
-    setBusy("Reading video…");
+    setBusy("Compressing film…");
     try {
-      setVideo(await readVideoFile(file));
+      setVideo(await uploadFilm(token, file));
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Video failed.");
     } finally {
@@ -129,8 +181,8 @@ function LookForm({
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!cover) {
-          setErr("Add a still first.");
+        if (!stills[0]) {
+          setErr("Add at least one still.");
           return;
         }
         save.mutate();
@@ -143,23 +195,41 @@ function LookForm({
         {existing ? "Edit the look" : "Upload a look"}
       </h2>
       <p className="text-sm text-paper/50">
-        Stills are compressed on the way in, then shown large on the site.
-        Add a caption if you want it in the journal.
+        Drop up to {MAX_STILLS} photographs. The house compresses them for the
+        archive, then opens a high-resolution still when someone looks closer.
       </p>
       <label className="block border border-dashed border-[#f0d24b]/40 bg-white/5 px-4 py-10 text-center text-sm text-paper/70">
-        Drop a photograph or click to choose
+        Drop photographs or click to choose — {stills.length}/{MAX_STILLS}
         <input
           type="file"
           accept="image/*"
+          multiple
           className="hidden"
-          onChange={(e) => onImage(e.target.files?.[0])}
+          onChange={(e) => {
+            void onImages(e.target.files);
+            e.target.value = "";
+          }}
         />
       </label>
-      {cover ? (
-        <img src={cover} alt="" className="max-h-[28rem] w-full object-contain bg-white/5" />
+      {stills.length ? (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {stills.map((still, index) => (
+            <button
+              key={`${still.display}-${index}`}
+              type="button"
+              className="relative bg-white/5"
+              onClick={() =>
+                setStills((current) => current.filter((_, i) => i !== index))
+              }
+              title="Remove"
+            >
+              <img src={still.preview || still.thumb || still.display} alt="" className="h-28 w-full object-contain" />
+            </button>
+          ))}
+        </div>
       ) : null}
       <label className="block text-xs uppercase tracking-[0.16em] text-paper/45">
-        Optional video
+        Optional video — compressed in the house
         <input
           type="file"
           accept="video/*"
@@ -167,9 +237,10 @@ function LookForm({
           onChange={(e) => onVideo(e.target.files?.[0])}
         />
       </label>
+      {video ? <p className="text-xs text-paper/40">Film ready.</p> : null}
       <input
         placeholder="Or paste a video link"
-        value={video.startsWith("data:") ? "" : video}
+        value={video.startsWith("data:") || video.startsWith("r2:") ? "" : video}
         onChange={(e) => setVideo(e.target.value)}
         className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm text-paper outline-none"
       />
@@ -228,7 +299,7 @@ function LookForm({
       {err ? <p className="text-sm text-[#f0d24b]">{err}</p> : null}
       <button
         type="submit"
-        disabled={save.isPending}
+        disabled={save.isPending || Boolean(busy)}
         className="bg-[#f0d24b] px-6 py-3 text-[0.7rem] tracking-[0.2em] uppercase text-[#161412]"
       >
         {save.isPending ? "Saving…" : "Save look"}
@@ -243,6 +314,7 @@ function JournalForm({ token }: { token: string }) {
   const [media, setMedia] = useState("");
   const [type, setType] = useState<"image" | "video">("image");
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState("");
 
   const save = useMutation({
     mutationFn: () =>
@@ -286,13 +358,18 @@ function JournalForm({ token }: { token: string }) {
             try {
               if (file.type.startsWith("video")) {
                 setType("video");
-                setMedia(await readVideoFile(file));
+                setBusy("Compressing film…");
+                setMedia(await uploadFilm(token, file));
               } else {
                 setType("image");
-                setMedia(await compressImageFile(file));
+                setBusy("Compressing still…");
+                const stored = await uploadStill(token, file);
+                setMedia(stored.display);
               }
             } catch (error) {
               setErr(error instanceof Error ? error.message : "Could not read file.");
+            } finally {
+              setBusy("");
             }
           }}
         />
@@ -312,12 +389,13 @@ function JournalForm({ token }: { token: string }) {
         onChange={(e) => setCaption(e.target.value)}
         className="h-24 w-full border border-white/15 bg-transparent px-3 py-3 text-sm text-paper outline-none"
       />
+      {busy ? <p className="text-sm text-[#f0d24b]">{busy}</p> : null}
       {err ? <p className="text-sm text-[#f0d24b]">{err}</p> : null}
       <button
         type="submit"
         className="border border-[#f0d24b] px-6 py-3 text-[0.7rem] tracking-[0.2em] uppercase text-[#f0d24b]"
       >
-        {save.isPending ? "Pinning…" : "Pin to journal"}
+        Save to journal
       </button>
     </form>
   );

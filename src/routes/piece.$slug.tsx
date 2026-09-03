@@ -10,6 +10,7 @@ import {
 } from "@/lib/server/boutique";
 import { useBag } from "@/lib/bag";
 import { formatMoney } from "@/lib/utils";
+import { parseGallery } from "@/lib/media";
 import { SignedIn, SignedOut } from "@/lib/auth/gates";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
@@ -52,6 +53,21 @@ function PiecePage() {
 function PieceView({ piece }: { piece: Piece }) {
   const add = useBag((s) => s.add);
   const [note, setNote] = useState("");
+  const frames = parseGallery(piece.gallery);
+  const slides = (frames.length
+    ? frames.map((item) =>
+        typeof item === "string"
+          ? { thumb: item, display: item, master: item }
+          : {
+              thumb: item.thumb || item.display || piece.cover_url,
+              display: item.display || item.thumb || piece.cover_url,
+              master: item.master || item.display || piece.cover_url,
+            },
+      )
+    : [{ thumb: piece.cover_url, display: piece.cover_url, master: piece.cover_url }]
+  ).filter((item) => item.display);
+  const [active, setActive] = useState(0);
+  const current = slides[active] ?? slides[0];
   const save = useMutation({
     mutationFn: () => toggleWishlist({ data: { pieceId: piece.id } }),
     onSuccess: (res) => setNote(res.saved ? "Saved to your account." : "Removed from saved."),
@@ -61,11 +77,29 @@ function PieceView({ piece }: { piece: Piece }) {
   return (
     <section className="mx-auto grid max-w-6xl gap-10 px-5 py-10 md:grid-cols-2 md:py-16">
       <div className="bg-paper-2">
-        <img
-          src={piece.cover_url}
-          alt={piece.title}
-          className="w-full object-contain"
-        />
+        {current ? (
+          <img
+            src={current.display}
+            srcSet={`${current.display} 1600w, ${current.master} 3840w`}
+            sizes="(min-width: 768px) 50vw, 100vw"
+            alt={piece.title}
+            className="w-full object-contain"
+          />
+        ) : null}
+        {slides.length > 1 ? (
+          <div className="mt-3 grid grid-cols-5 gap-2">
+            {slides.map((slide, index) => (
+              <button
+                key={`${slide.thumb}-${index}`}
+                type="button"
+                className={index === active ? "ring-1 ring-ink" : "opacity-70"}
+                onClick={() => setActive(index)}
+              >
+                <img src={slide.thumb || slide.display} alt="" className="h-20 w-full object-contain bg-paper" />
+              </button>
+            ))}
+          </div>
+        ) : null}
         {piece.video_url ? (
           <video
             className="mt-3 w-full"

@@ -67,7 +67,12 @@ export function SiteShell({
             ))}
           </nav>
           <div className={`flex items-center gap-5 ${ink}`}>
-            {houseAccount ? null : (
+            {user && !houseAccount ? (
+              <Link to="/account" className={`text-[11px] tracking-[0.18em] uppercase ${ink}`}>
+                Account
+              </Link>
+            ) : null}
+            {user ? null : (
               <Link
                 to="/login"
                 className={`text-[11px] tracking-[0.18em] uppercase ${ink}`}
@@ -90,7 +95,12 @@ export function SiteShell({
               {item.label}
             </Link>
           ))}
-          {houseAccount ? null : (
+          {user && !houseAccount ? (
+            <Link to="/account" className="shrink-0 text-mute">
+              Account
+            </Link>
+          ) : null}
+          {user ? null : (
             <Link to="/login" className="shrink-0 text-mute">
               Sign in
             </Link>

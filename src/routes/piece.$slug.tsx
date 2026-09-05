@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SiteShell } from "@/components/site-shell";
@@ -14,7 +14,8 @@ import { parseGallery } from "@/lib/media";
 import { CallbackForm } from "@/components/callback-form";
 import { listLooks, getHouseNotes } from "@/lib/firebase/catalog";
 import { HouseContact, mergeHouse } from "@/components/house-contact";
-import { HouseSignedIn, HouseSignedOut } from "@/lib/firebase/session";
+import { HouseSignedIn, HouseSignedOut, useHouseUser } from "@/lib/firebase/session";
+import { rememberNext, stashPendingLook } from "@/lib/client-closet";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
 
@@ -79,6 +80,8 @@ function PiecePage() {
 
 function PieceView({ piece }: { piece: Piece }) {
   const add = useBag((s) => s.add);
+  const nav = useNavigate();
+  const { user } = useHouseUser();
   const [note, setNote] = useState("");
   const frames = parseGallery(piece.gallery);
   const slides = (frames.length
@@ -160,16 +163,24 @@ function PieceView({ piece }: { piece: Piece }) {
             type="button"
             className="bg-ink px-6 py-3 text-xs tracking-[0.2em] uppercase text-paper"
             onClick={() => {
-              add({
-                id: piece.id,
+              const look = {
+                id: piece.id || Date.now(),
                 slug: piece.slug,
                 title: piece.title,
                 subtitle: piece.subtitle,
                 price_cents: piece.price_cents,
                 currency: piece.currency,
                 cover_url: piece.cover_url,
-              });
-              setNote("Added to bag.");
+              };
+              if (!user) {
+                stashPendingLook(look);
+                rememberNext("/bag");
+                setNote("Sign in to keep this look in your bag.");
+                void nav({ to: "/login" });
+                return;
+              }
+              add(look);
+              setNote("Added to bag. It stays with your account.");
             }}
           >
             Add to bag

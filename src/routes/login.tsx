@@ -13,6 +13,7 @@ import { GoogleMark } from "@/components/brand-marks";
 import { isHouseAccount } from "@/lib/house";
 import { getPublicCatalog } from "@/lib/server/boutique";
 import { listLooks } from "@/lib/firebase/catalog";
+import { takeNext } from "@/lib/client-closet";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
@@ -40,13 +41,13 @@ function Login() {
   useEffect(() => {
     if (isPending || !user) return;
     const house = isHouseAccount(user.primaryEmail, catalog.data?.settings?.admin_email);
-    void nav({ to: house ? "/atelier-studio" : "/account" });
+    void nav({ to: house ? "/atelier-studio" : takeNext() });
   }, [user, isPending, catalog.data?.settings?.admin_email, nav]);
 
   async function finish() {
     const snapshot = catalog.data ?? (await getPublicCatalog());
     const house = isHouseAccount(email || user?.primaryEmail, snapshot.settings?.admin_email);
-    await nav({ to: house ? "/atelier-studio" : "/account" });
+    await nav({ to: house ? "/atelier-studio" : takeNext() });
   }
 
   async function onEmail(e: React.FormEvent) {
@@ -72,8 +73,8 @@ function Login() {
               {mode === "in" ? "Welcome back." : "Join the house."}
             </h1>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-mute">
-              Save looks. An account is optional — you may still request a call
-              from any piece.
+              Walk the collection without an account. Sign in when you add a look
+              to the bag so it stays with you offline.
             </p>
             <div className="mt-10 space-y-3">
               <button

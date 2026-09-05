@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { FirebaseSession } from "@/lib/firebase/session";
+import { ClientHydrate } from "@/components/client-hydrate";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { QueryProvider } from "@/components/query-provider";
 import appCss from "../styles.css?url";
@@ -50,6 +51,7 @@ export const Route = createRootRoute({
         <PreviewHostBridge />
         <AuthProvider>
           <FirebaseSession>
+            <ClientHydrate />
             <QueryProvider>
               <Outlet />
             </QueryProvider>

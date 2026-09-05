@@ -7,7 +7,7 @@ import { isHouseAccount } from "@/lib/house";
 import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
 import { getHouseNotes } from "@/lib/firebase/catalog";
-import { InstagramMark } from "@/components/brand-marks";
+import { InstagramMark, TikTokMark } from "@/components/brand-marks";
 import { HouseContact, mergeHouse } from "@/components/house-contact";
 
 const NAV = [
@@ -112,6 +112,20 @@ export function SiteShell({
                 <InstagramMark className="h-4 w-4" />
                 Instagram
               </a>
+            ) : null}
+            {house.tiktok ? (
+              <>
+                <br />
+                <a
+                  href={house.tiktok}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-ink"
+                >
+                  <TikTokMark className="h-4 w-4" />
+                  TikTok
+                </a>
+              </>
             ) : null}
             {settings?.drape_url ? (
               <>

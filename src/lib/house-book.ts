@@ -7,6 +7,7 @@ export type Book = {
   phone: string;
   payment_phone: string;
   instagram: string;
+  tiktok: string;
 };
 
 const EMPTY: Book = {
@@ -16,6 +17,7 @@ const EMPTY: Book = {
   phone: "+256740711344",
   payment_phone: "+256740711344",
   instagram: "https://www.instagram.com/binti_dezigns",
+  tiktok: "",
 };
 
 export function readHouseBook(): Book {
@@ -44,6 +46,7 @@ export function mergeBooks(...parts: Array<Partial<Book> | null | undefined>): B
       phone: part.phone || acc.phone,
       payment_phone: part.payment_phone || acc.payment_phone,
       instagram: part.instagram || acc.instagram,
+      tiktok: part.tiktok || acc.tiktok,
     };
   }, EMPTY);
 }

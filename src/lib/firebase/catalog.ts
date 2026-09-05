@@ -160,6 +160,7 @@ export type HouseNotes = {
   phone: string;
   payment_phone: string;
   instagram: string;
+  tiktok: string;
 };
 
 export async function getHouseNotes(): Promise<HouseNotes | null> {
@@ -175,6 +176,7 @@ export async function getHouseNotes(): Promise<HouseNotes | null> {
     phone: String(data.phone ?? ""),
     payment_phone: String(data.payment_phone ?? ""),
     instagram: String(data.instagram ?? ""),
+    tiktok: String(data.tiktok ?? ""),
   };
 }
 

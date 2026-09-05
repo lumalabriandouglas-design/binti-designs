@@ -30,3 +30,14 @@ export function GoogleMark({ className = "h-4 w-4" }: { className?: string }) {
     </svg>
   );
 }
+
+export function TikTokMark({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path
+        fill="currentColor"
+        d="M14.8 3h2.52c.24 2.16 1.62 3.78 3.68 4.02v2.52c-1.26.12-2.46-.24-3.6-.96v7.14c0 4.38-3.18 6.48-6.36 6.48-3.3 0-6.24-2.22-6.24-6.12 0-3.96 2.94-6.18 6.12-6.18.42 0 .9.06 1.32.18v2.7a3.3 3.3 0 0 0-1.2-.24c-1.68 0-3.3 1.02-3.3 3.48 0 2.4 1.5 3.48 3.18 3.48 1.62 0 3.06-.96 3.06-3.36z"
+      />
+    </svg>
+  );
+}

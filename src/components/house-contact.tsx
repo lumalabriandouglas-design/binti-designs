@@ -3,7 +3,7 @@ import { Copy, Phone } from "lucide-react";
 import type { Settings } from "@/lib/server/boutique";
 import type { HouseNotes } from "@/lib/firebase/catalog";
 import { readHouseBook } from "@/lib/house-book";
-import { InstagramMark, WhatsAppMark } from "@/components/brand-marks";
+import { InstagramMark, TikTokMark, WhatsAppMark } from "@/components/brand-marks";
 
 export function mergeHouse(
   settings?: Settings | null,
@@ -15,6 +15,7 @@ export function mergeHouse(
   phone: string;
   payment: string;
   instagram: string;
+  tiktok: string;
   waLink: string;
 } {
   const local = readHouseBook();
@@ -29,6 +30,7 @@ export function mergeHouse(
     phone,
     payment,
     instagram: notes?.instagram || settings?.instagram || local.instagram,
+    tiktok: notes?.tiktok || local.tiktok,
     waLink: digits ? `https://wa.me/${digits}` : "",
   };
 }
@@ -76,6 +78,12 @@ export function HouseContact({
         <a href={house.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-ink">
           <InstagramMark className="h-4 w-4" />
           Instagram
+        </a>
+      ) : null}
+      {house.tiktok ? (
+        <a href={house.tiktok} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-ink">
+          <TikTokMark className="h-4 w-4" />
+          TikTok
         </a>
       ) : null}
     </div>

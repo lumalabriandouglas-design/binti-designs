@@ -22,7 +22,7 @@ import { isHouseAccount } from "@/lib/house";
 import { compressImageFile, compressVideoFile, parseGallery } from "@/lib/media";
 import { uploadFilm, uploadStill } from "@/lib/client/upload-media";
 import { Phone } from "lucide-react";
-import { GoogleMark, InstagramMark, WhatsAppMark } from "@/components/brand-marks";
+import { GoogleMark, InstagramMark, TikTokMark, WhatsAppMark } from "@/components/brand-marks";
 import { BananaMark, MinionPeek } from "@/components/minion";
 import {
   deletePiece,
@@ -72,8 +72,8 @@ function AtelierStudio() {
 
 function QuietFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-paper px-6 text-center text-ink">
-      <div className="max-w-md">{children}</div>
+    <div className="flex min-h-dvh items-center justify-center bg-[#14110e] px-6 text-center text-[#f6f1ea]">
+      <div className="w-full max-w-md">{children}</div>
     </div>
   );
 }
@@ -91,14 +91,14 @@ function StudioDoor({
   return (
     <QuietFrame>
       <BananaMark className="mx-auto mb-8 h-8 w-8" />
-      <p className="eyebrow">Private floor</p>
-      <h1 className="display mt-4 text-5xl">Welcome back, Natasha.</h1>
-      <p className="mt-4 text-sm text-mute">
-        The cloth is already lifted. The table is as you left it.
+      <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-gold">Private floor</p>
+      <h1 className="display mt-4 text-5xl text-[#f6f1ea]">Welcome back, Natasha.</h1>
+      <p className="mt-4 text-sm text-[#f6f1ea]/70">
+        Designer floor and house book. Only Natasha opens this door.
       </p>
       <button
         type="button"
-        className="mt-10 flex w-full items-center justify-center gap-3 border border-ink px-6 py-3 text-xs tracking-[0.24em] uppercase"
+        className="mt-10 flex w-full items-center justify-center gap-3 border border-gold bg-gold px-6 py-3 text-xs tracking-[0.24em] uppercase text-[#14110e]"
         onClick={async () => {
           setDenied("");
           try {
@@ -141,7 +141,7 @@ function StudioDoor({
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
         />
-        <button type="submit" className="w-full bg-ink py-3 text-xs tracking-[0.22em] uppercase text-paper">
+        <button type="submit" className="w-full border border-[#f6f1ea]/30 py-3 text-xs tracking-[0.22em] uppercase text-[#f6f1ea]">
           Open
         </button>
       </form>
@@ -201,52 +201,62 @@ function Dashboard({ email }: { email: string }) {
     setTab("table");
   }
 
+  const rooms = [
+    { id: "rack" as Tab, label: "Collection", hint: "The rack" },
+    { id: "table" as Tab, label: "Hang", hint: "New look" },
+    { id: "requests" as Tab, label: "Desk", hint: "Clients" },
+    { id: "house" as Tab, label: "House", hint: "Numbers & socials" },
+  ];
+
   return (
-    <div className="min-h-dvh bg-paper text-ink">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-          <div className="flex items-center gap-3">
-            <BananaMark className="h-6 w-6" />
+    <div className="min-h-dvh bg-[#f3eee6] text-ink lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+      <aside className="bg-[#14110e] text-[#f6f1ea]">
+        <div className="flex h-full flex-col px-7 py-8">
+          <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-gold">Atelier</p>
+          <p className="display mt-3 text-3xl">BINTI</p>
+          <p className="mt-2 text-sm text-[#f6f1ea]/65">Welcome back, Natasha.</p>
+          <p className="mt-1 text-[11px] text-[#f6f1ea]/40">{email}</p>
+          <nav className="mt-10 space-y-1">
+            {rooms.map((room) => (
+              <button
+                key={room.id}
+                type="button"
+                onClick={() => {
+                  if (room.id === "table") setEditing(null);
+                  setTab(room.id);
+                }}
+                className={`flex w-full items-baseline justify-between px-3 py-3 text-left ${
+                  tab === room.id
+                    ? "bg-gold text-[#14110e]"
+                    : "text-[#f6f1ea]/75 hover:text-[#f6f1ea]"
+                }`}
+              >
+                <span className="text-[11px] tracking-[0.18em] uppercase">{room.label}</span>
+                <span className="text-[10px] tracking-[0.12em] uppercase opacity-70">{room.hint}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="mt-10 grid grid-cols-2 gap-3 border-t border-[#f6f1ea]/15 pt-6">
             <div>
-              <p className="display text-2xl leading-none">Studio</p>
-              <p className="mt-1 text-[0.68rem] text-mute">Welcome back, Natasha.</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-gold">Looks</p>
+              <p className="display mt-1 text-3xl">{rack.length}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-gold">Desk</p>
+              <p className="display mt-1 text-3xl">{(inquiries.data ?? []).length}</p>
             </div>
           </div>
-          <nav className="flex flex-wrap items-center gap-6 text-[11px] tracking-[0.18em] uppercase text-mute">
+          <div className="mt-auto flex flex-col gap-3 pt-10 text-[10px] uppercase tracking-[0.18em] text-[#f6f1ea]/50">
+            <Link to="/">The house</Link>
             <Link to="/collection">Collection</Link>
-            <Link to="/atelier">House</Link>
-            <Link to="/journal">Notes</Link>
-          </nav>
+            <button type="button" className="text-left" onClick={() => void houseSignOut()}>
+              Close the floor
+            </button>
+          </div>
         </div>
-      </header>
+      </aside>
 
-      <div className="mx-auto max-w-6xl px-5 py-10">
-        <div className="mb-10 flex flex-wrap gap-4 text-[0.65rem] tracking-[0.2em] uppercase">
-          <button
-            type="button"
-            className={tab === "rack" || tab === "table" ? "text-ink" : "text-mute"}
-            onClick={() => {
-              setEditing(null);
-              setTab("rack");
-            }}
-          >
-            Looks
-          </button>
-          <button
-            type="button"
-            className={tab === "house" ? "text-ink" : "text-mute"}
-            onClick={() => setTab("house")}
-          >
-            Numbers
-          </button>
-          <button
-            type="button"
-            className={tab === "requests" ? "text-ink" : "text-mute"}
-            onClick={() => setTab("requests")}
-          >
-            Clients
-          </button>
-        </div>
+      <div className="px-5 py-10 md:px-10">
         {tab === "rack" ? (
           <Rack
             looks={rack}
@@ -278,6 +288,7 @@ function Dashboard({ email }: { email: string }) {
             phone={notes.data?.phone || catalog.data?.settings?.phone || ""}
             payment={notes.data?.payment_phone || catalog.data?.settings?.payment_phone || ""}
             instagram={notes.data?.instagram || catalog.data?.settings?.instagram || ""}
+            tiktok={notes.data?.tiktok || ""}
             about={notes.data?.about || catalog.data?.settings?.about || ""}
             tagline={notes.data?.tagline || catalog.data?.settings?.tagline || ""}
             onSaved={() => {
@@ -291,14 +302,7 @@ function Dashboard({ email }: { email: string }) {
         ) : null}
       </div>
 
-      <footer className="group border-t border-line">
-        <div className="mx-auto flex max-w-6xl items-end justify-between px-5 py-8">
-          <p className="text-[0.62rem] tracking-[0.22em] uppercase text-mute">
-            For Natasha only
-          </p>
-          <MinionPeek />
-        </div>
-      </footer>
+      <footer className="px-5 pb-8 text-[10px] uppercase tracking-[0.18em] text-mute">For Natasha only</footer>
     </div>
   );
 }
@@ -634,6 +638,7 @@ function HouseBook({
   phone,
   payment,
   instagram,
+  tiktok,
   about,
   tagline,
   onSaved,
@@ -643,6 +648,7 @@ function HouseBook({
   phone: string;
   payment: string;
   instagram: string;
+  tiktok: string;
   about: string;
   tagline: string;
   onSaved: () => void;
@@ -652,6 +658,7 @@ function HouseBook({
   const [tel, setTel] = useState(phone || seed.phone);
   const [pay, setPay] = useState(payment || seed.payment_phone);
   const [ig, setIg] = useState(instagram || seed.instagram);
+  const [tt, setTt] = useState(tiktok || seed.tiktok);
   const [line, setLine] = useState(tagline || seed.tagline);
   const [story, setStory] = useState(about || seed.about);
   const [note, setNote] = useState("");
@@ -663,9 +670,10 @@ function HouseBook({
     if (phone) setTel(phone);
     if (payment) setPay(payment);
     if (instagram) setIg(instagram);
+    if (tiktok) setTt(tiktok);
     if (tagline) setLine(tagline);
     if (about) setStory(about);
-  }, [whatsapp, phone, payment, instagram, tagline, about]);
+  }, [whatsapp, phone, payment, instagram, tiktok, tagline, about]);
 
   return (
     <form
@@ -682,6 +690,7 @@ function HouseBook({
           phone: tel.trim(),
           payment_phone: pay.trim(),
           instagram: ig.trim(),
+          tiktok: tt.trim(),
         };
         writeHouseBook(book);
         let remote = false;
@@ -781,6 +790,20 @@ function HouseBook({
           placeholder="https://www.instagram.com/binti_dezigns"
           value={ig}
           onChange={(e) => setIg(e.target.value)}
+          className="mt-2 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+        />
+      </label>
+      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
+        <span className="flex items-center gap-2">
+          <TikTokMark className="h-3.5 w-3.5" />
+          TikTok
+        </span>
+        <input
+          type="url"
+          name="tiktok"
+          placeholder="https://www.tiktok.com/@binti.dezigns"
+          value={tt}
+          onChange={(e) => setTt(e.target.value)}
           className="mt-2 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
         />
       </label>

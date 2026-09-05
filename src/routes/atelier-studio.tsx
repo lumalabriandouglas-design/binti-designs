@@ -20,7 +20,7 @@ import {
   useHouseUser,
 } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
-import { compressImageFile, compressVideoFile, parseGallery } from "@/lib/media";
+import { compressVideoFile, parseGallery } from "@/lib/media";
 import { uploadFilm, uploadStill } from "@/lib/client/upload-media";
 import { Phone } from "lucide-react";
 import { GoogleMark, InstagramMark, TikTokMark, WhatsAppMark } from "@/components/brand-marks";
@@ -572,13 +572,13 @@ function LookForm({
                   try {
                     const stored = await uploadStill(token || "house", file);
                     const url = stored.display || stored.preview || stored.master;
+                    if (!url || url.startsWith("data:")) {
+                      throw new Error("The archive would not take that still.");
+                    }
                     setCover((current) => current || url);
                     setGallery((current) => [...current, url]);
                   } catch (err) {
-                    const url = await compressImageFile(file);
-                    setCover((current) => current || url);
-                    setGallery((current) => [...current, url]);
-                    setError(err instanceof Error ? err.message : "Archive failed; kept a local still.");
+                    setError(err instanceof Error ? err.message : "Could not send the still.");
                   }
                 }
                 setBusy("");

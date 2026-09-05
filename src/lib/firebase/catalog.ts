@@ -11,6 +11,7 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { getFirebaseDb } from "./firebase";
+import { resolveMediaBatch } from "@/lib/server/upload";
 
 export type Look = {
   id: string;
@@ -66,9 +67,24 @@ export async function listLooks(): Promise<Look[]> {
   const db = getFirebaseDb();
   if (!db) return [];
   const snap = await getDocs(collection(db, "pieces"));
-  return snap.docs
+  const looks = snap.docs
     .map((row) => asLook(row.id, row.data()))
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const refs = looks.flatMap((look) =>
+    [look.cover_url, look.video_url, ...look.gallery].filter((url) => url.startsWith("r2:")),
+  );
+  if (!refs.length) return looks;
+  try {
+    const map = await resolveMediaBatch({ data: { refs: [...new Set(refs)] } });
+    return looks.map((look) => ({
+      ...look,
+      cover_url: map[look.cover_url] || look.cover_url,
+      video_url: look.video_url ? map[look.video_url] || look.video_url : "",
+      gallery: look.gallery.map((url) => map[url] || url),
+    }));
+  } catch {
+    return looks;
+  }
 }
 
 export async function listPublicLooks(): Promise<Look[]> {

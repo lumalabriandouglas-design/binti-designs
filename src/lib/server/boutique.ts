@@ -472,33 +472,34 @@ export const toggleWishlist = createServerFn({ method: "POST" })
   .middleware([firebaseAuthMiddleware])
   .validator(z.object({ pieceId: z.number() }))
   .handler(async ({ data, context }) => {
+    const uid = context.userId || "guest";
     if (useMemoryDb()) {
-      const list = memory().wishlists.get(context.userId) ?? [];
+      const list = memory().wishlists.get(uid) ?? [];
       if (list.includes(data.pieceId)) {
         memory().wishlists.set(
-          context.userId,
+          uid,
           list.filter((id) => id !== data.pieceId),
         );
         return { saved: false };
       }
-      memory().wishlists.set(context.userId, [...list, data.pieceId]);
+      memory().wishlists.set(uid, [...list, data.pieceId]);
       return { saved: true };
     }
     const sql = await getSql();
     const existing = await sql<{ piece_id: number }>`
       select piece_id from wishlists
-      where user_id = ${context.userId} and piece_id = ${data.pieceId}
+      where user_id = ${uid} and piece_id = ${data.pieceId}
     `;
     if (existing[0]) {
       await sql`
         delete from wishlists
-        where user_id = ${context.userId} and piece_id = ${data.pieceId}
+        where user_id = ${uid} and piece_id = ${data.pieceId}
       `;
       return { saved: false };
     }
     await sql`
       insert into wishlists (user_id, piece_id)
-      values (${context.userId}, ${data.pieceId})
+      values (${uid}, ${data.pieceId})
     `;
     return { saved: true };
   });
@@ -506,15 +507,16 @@ export const toggleWishlist = createServerFn({ method: "POST" })
 export const getMyWishlist = createServerFn({ method: "GET" })
   .middleware([firebaseAuthMiddleware])
   .handler(async ({ context }) => {
+    const uid = context.userId || "guest";
     if (useMemoryDb()) {
-      const ids = memory().wishlists.get(context.userId) ?? [];
+      const ids = memory().wishlists.get(uid) ?? [];
       return memory().pieces.filter((p) => ids.includes(p.id));
     }
     const sql = await getSql();
     return sql<Piece>`
       select p.* from pieces p
       inner join wishlists w on w.piece_id = p.id
-      where w.user_id = ${context.userId}
+      where w.user_id = ${uid}
       order by w.created_at desc
     `;
   });

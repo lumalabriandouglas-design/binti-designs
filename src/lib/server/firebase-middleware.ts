@@ -7,7 +7,8 @@ export const firebaseAuthMiddleware = createMiddleware({ type: "function" })
     if (typeof window !== "undefined") {
       try {
         const { firebaseAuth } = await import("@/lib/firebase/app");
-        token = (await firebaseAuth()?.currentUser?.getIdToken()) ?? undefined;
+        const user = firebaseAuth()?.currentUser;
+        token = (await user?.getIdToken()) ?? undefined;
       } catch {
         token = undefined;
       }
@@ -15,6 +16,17 @@ export const firebaseAuthMiddleware = createMiddleware({ type: "function" })
     return next({ sendContext: { firebaseToken: token } });
   })
   .server(async ({ next, context }) => {
-    const session = await verifyFirebaseToken(context.firebaseToken);
-    return next({ context: { userId: session.userId, email: session.email } });
+    let userId: string | null = null;
+    let email: string | null = null;
+    try {
+      const session = await verifyFirebaseToken(
+        (context as { firebaseToken?: string }).firebaseToken,
+      );
+      userId = session.userId || null;
+      email = session.email;
+    } catch {
+      userId = null;
+      email = null;
+    }
+    return next({ context: { userId, email } });
   });

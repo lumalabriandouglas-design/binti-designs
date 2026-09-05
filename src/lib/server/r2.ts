@@ -41,7 +41,11 @@ export function r2Configured() {
 }
 
 export function r2Bucket() {
-  return required("R2_BUCKET") || "binti-designs";
+  return required("R2_BUCKET") || required("R2_BUCKET_ALT") || "binti-designs";
+}
+
+function buckets() {
+  return [...new Set([required("R2_BUCKET"), required("R2_BUCKET_ALT"), "binti-designs", "binti designs"].filter(Boolean))];
 }
 
 let client: S3Client | null = null;
@@ -89,16 +93,24 @@ export async function ensureR2Cors() {
 }
 
 export async function r2Put(key: string, body: Buffer, contentType: string) {
-  await r2Client().send(
-    new PutObjectCommand({
-      Bucket: r2Bucket(),
-      Key: key,
-      Body: body,
-      ContentType: contentType,
-      CacheControl: "public, max-age=31536000, immutable",
-    }),
-  );
-  return key;
+  let last: unknown;
+  for (const Bucket of buckets()) {
+    try {
+      await r2Client().send(
+        new PutObjectCommand({
+          Bucket,
+          Key: key,
+          Body: body,
+          ContentType: contentType,
+          CacheControl: "public, max-age=31536000, immutable",
+        }),
+      );
+      return key;
+    } catch (err) {
+      last = err;
+    }
+  }
+  throw last instanceof Error ? last : new Error("Archive would not take the file.");
 }
 
 export async function r2SignGet(key: string, seconds = 60 * 60 * 12) {
@@ -122,6 +134,12 @@ export async function r2SignPut(key: string, contentType: string) {
   );
 }
 
+export async function publicOrSigned(key: string) {
+  const base = required("R2_PUBLIC_BASE").replace(/\/$/, "");
+  if (base) return `${base}/${key}`;
+  return r2SignGet(key, 60 * 60 * 24 * 7);
+}
+
 export function isR2Ref(value: string) {
   return value.startsWith("r2:");
 }
@@ -130,7 +148,7 @@ export async function resolveMediaRef(value: string) {
   if (!value) return value;
   if (value.startsWith("r2:")) {
     if (!r2Configured()) return "";
-    return r2SignGet(value.slice(3));
+    return publicOrSigned(value.slice(3));
   }
   return value;
 }

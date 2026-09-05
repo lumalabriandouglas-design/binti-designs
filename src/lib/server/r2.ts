@@ -77,9 +77,16 @@ export async function ensureR2Cors() {
           CORSRules: [
             {
               AllowedHeaders: ["*"],
-              AllowedMethods: ["GET", "PUT", "HEAD"],
-              AllowedOrigins: ["*"],
-              ExposeHeaders: ["ETag"],
+              AllowedMethods: ["GET", "PUT", "HEAD", "POST"],
+              AllowedOrigins: [
+                "https://binti-designs.vercel.app",
+                "https://*.vercel.app",
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "*",
+              ],
+              ExposeHeaders: ["ETag", "Location"],
               MaxAgeSeconds: 86400,
             },
           ],

@@ -239,6 +239,13 @@ function Dashboard({ email }: { email: string }) {
           >
             Numbers
           </button>
+          <button
+            type="button"
+            className={tab === "requests" ? "text-ink" : "text-mute"}
+            onClick={() => setTab("requests")}
+          >
+            Clients
+          </button>
         </div>
         {tab === "rack" ? (
           <Rack
@@ -806,23 +813,61 @@ function HouseBook({
   );
 }
 
-function Requests({ rows }: { rows: { id: string; name: string; phone: string; note: string; pieceSlug: string }[] }) {
+function Requests({
+  rows,
+}: {
+  rows: {
+    id: string;
+    name: string;
+    phone: string;
+    email?: string;
+    accountId?: string;
+    accountName?: string;
+    note: string;
+    pieceSlug: string;
+    createdAt?: string;
+  }[];
+}) {
   return (
     <div>
-      <p className="text-[0.62rem] tracking-[0.28em] uppercase text-mute">Requests</p>
-      <h1 className="display mt-2 text-5xl">Call backs</h1>
-      <ul className="mt-8 divide-y divide-line">
-        {rows.length === 0 ? <li className="py-4 text-sm text-mute">None yet.</li> : null}
-        {rows.map((row) => (
-          <li key={row.id} className="py-4 text-sm">
-            <p>
-              {row.name || "Client"} · {row.phone}
-            </p>
-            <p className="text-mute">
-              {row.pieceSlug} {row.note}
-            </p>
-          </li>
-        ))}
+      <p className="eyebrow">Desk</p>
+      <h1 className="display mt-2 text-5xl">Clients</h1>
+      <p className="mt-4 max-w-lg text-sm text-mute">
+        Numbers they left, and the account if they signed in.
+      </p>
+      <ul className="mt-10 divide-y divide-line">
+        {rows.length === 0 ? <li className="py-6 text-sm text-mute">No one has left a number yet.</li> : null}
+        {rows.map((row) => {
+          const digits = row.phone.replace(/[^\d]/g, "");
+          return (
+            <li key={row.id} className="grid gap-2 py-6 sm:grid-cols-[1fr_auto]">
+              <div>
+                <p className="text-lg">{row.name || "Client"}</p>
+                <p className="mt-1 text-sm">{row.phone}</p>
+                {row.email || row.accountName ? (
+                  <p className="mt-1 text-sm text-mute">
+                    Account · {row.accountName || row.email}
+                    {row.email && row.accountName ? ` · ${row.email}` : ""}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm text-mute">Left as a guest</p>
+                )}
+                <p className="mt-2 text-sm text-mute">
+                  {row.pieceSlug ? `Look · ${row.pieceSlug}` : "House"}
+                  {row.note ? ` — ${row.note}` : ""}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-[0.62rem] tracking-[0.16em] uppercase">
+                {digits ? (
+                  <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer">
+                    WhatsApp
+                  </a>
+                ) : null}
+                {row.phone ? <a href={`tel:${row.phone}`}>Call</a> : null}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

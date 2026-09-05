@@ -33,6 +33,9 @@ export type Inquiry = {
   id: string;
   name: string;
   phone: string;
+  email: string;
+  accountId: string;
+  accountName: string;
   note: string;
   pieceSlug: string;
   createdAt: string;
@@ -110,6 +113,9 @@ export async function sendInquiry(input: {
   phone: string;
   note: string;
   pieceSlug: string;
+  email?: string;
+  accountId?: string;
+  accountName?: string;
 }) {
   const db = getFirebaseDb();
   if (!db) throw new Error("Could not send the request.");
@@ -118,6 +124,9 @@ export async function sendInquiry(input: {
     phone: input.phone,
     note: input.note,
     pieceSlug: input.pieceSlug,
+    email: input.email ?? "",
+    accountId: input.accountId ?? "",
+    accountName: input.accountName ?? "",
     createdAt: serverTimestamp(),
   });
 }
@@ -133,6 +142,9 @@ export async function listInquiries(): Promise<Inquiry[]> {
         id: row.id,
         name: String(data.name ?? ""),
         phone: String(data.phone ?? ""),
+        email: String(data.email ?? ""),
+        accountId: String(data.accountId ?? ""),
+        accountName: String(data.accountName ?? ""),
         note: String(data.note ?? ""),
         pieceSlug: String(data.pieceSlug ?? ""),
         createdAt: String(data.createdAt?.toDate?.() ?? ""),

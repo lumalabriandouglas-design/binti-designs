@@ -212,38 +212,34 @@ function Dashboard({ email }: { email: string }) {
               <p className="mt-1 text-[0.68rem] text-mute">Welcome back, Natasha.</p>
             </div>
           </div>
-          <nav className="flex flex-wrap items-center gap-5 text-[0.65rem] tracking-[0.22em] uppercase text-mute">
-            {(
-              [
-                ["rack", "Rack"],
-                ["table", "House"],
-                ["house", "Numbers"],
-                ["requests", "Requests"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                className={tab === id ? "text-ink" : ""}
-                onClick={() => {
-                  if (id === "table" && tab !== "table") setEditing(null);
-                  setTab(id);
-                }}
-              >
-                {label}
-              </button>
-            ))}
-            <Link to="/" className="text-mute">
-              Public
-            </Link>
-            <button type="button" onClick={() => void houseSignOut()}>
-              Leave
-            </button>
+          <nav className="flex flex-wrap items-center gap-6 text-[11px] tracking-[0.18em] uppercase text-mute">
+            <Link to="/collection">Collection</Link>
+            <Link to="/atelier">House</Link>
+            <Link to="/journal">Notes</Link>
           </nav>
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-10">
+        <div className="mb-10 flex flex-wrap gap-4 text-[0.65rem] tracking-[0.2em] uppercase">
+          <button
+            type="button"
+            className={tab === "rack" || tab === "table" ? "text-ink" : "text-mute"}
+            onClick={() => {
+              setEditing(null);
+              setTab("rack");
+            }}
+          >
+            Looks
+          </button>
+          <button
+            type="button"
+            className={tab === "house" ? "text-ink" : "text-mute"}
+            onClick={() => setTab("house")}
+          >
+            Numbers
+          </button>
+        </div>
         {tab === "rack" ? (
           <Rack
             looks={rack}
@@ -644,22 +640,24 @@ function HouseBook({
   tagline: string;
   onSaved: () => void;
 }) {
-  const [wa, setWa] = useState(whatsapp);
-  const [tel, setTel] = useState(phone);
-  const [pay, setPay] = useState(payment);
-  const [ig, setIg] = useState(instagram);
-  const [line, setLine] = useState(tagline);
-  const [story, setStory] = useState(about);
+  const seed = readHouseBook();
+  const [wa, setWa] = useState(whatsapp || seed.whatsapp);
+  const [tel, setTel] = useState(phone || seed.phone);
+  const [pay, setPay] = useState(payment || seed.payment_phone);
+  const [ig, setIg] = useState(instagram || seed.instagram);
+  const [line, setLine] = useState(tagline || seed.tagline);
+  const [story, setStory] = useState(about || seed.about);
   const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const local = readHouseBook();
-    setWa(whatsapp || local.whatsapp);
-    setTel(phone || local.phone);
-    setPay(payment || local.payment_phone);
-    setIg(instagram || local.instagram);
-    setLine(tagline || local.tagline);
-    setStory(about || local.about);
+    if (whatsapp) setWa(whatsapp);
+    if (phone) setTel(phone);
+    if (payment) setPay(payment);
+    if (instagram) setIg(instagram);
+    if (tagline) setLine(tagline);
+    if (about) setStory(about);
   }, [whatsapp, phone, payment, instagram, tagline, about]);
 
   return (
@@ -667,78 +665,143 @@ function HouseBook({
       className="mx-auto max-w-xl space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
+        setSaving(true);
+        setError("");
+        setNote("");
         const book = {
-          tagline: line,
-          about: story,
+          tagline: line.trim() || "Cut. Drape. Belong.",
+          about: story.trim(),
           whatsapp: wa.trim(),
           phone: tel.trim(),
           payment_phone: pay.trim(),
           instagram: ig.trim(),
         };
         writeHouseBook(book);
+        let remote = false;
         try {
           await saveHouseNotes(book);
-        } catch {
-          /* Firestore rules may not be live yet — the book is already on this device. */
+          remote = true;
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Could not reach the house book.");
         }
         if (token) {
-          await saveSettings({
-            data: {
-              token,
-              brand_name: "BINTI DESIGNS",
-              tagline: line,
-              whatsapp: wa,
-              phone: tel,
-              payment_phone: pay,
-              instagram: ig,
-              drape_url: "https://odrapecollective.com",
-              about: story,
-              admin_email: HOUSE_EMAIL,
-            },
-          });
+          try {
+            await saveSettings({
+              data: {
+                token,
+                brand_name: "BINTI DESIGNS",
+                tagline: book.tagline,
+                whatsapp: book.whatsapp,
+                phone: book.phone,
+                payment_phone: book.payment_phone,
+                instagram: book.instagram,
+                drape_url: "https://odrapecollective.com",
+                about: book.about,
+                admin_email: HOUSE_EMAIL,
+              },
+            });
+          } catch {
+            /* Vercel studio token is per-instance */
+          }
         }
-        setNote("Numbers saved. They now show on the house, the bag, and the footer.");
+        setSaving(false);
+        setNote(
+          remote
+            ? "Saved. WhatsApp, call, and pay now use these numbers on the house and the bag."
+            : "Saved on this device. Publish Firestore rules so every visitor sees the same numbers.",
+        );
         onSaved();
       }}
     >
       <p className="eyebrow">House</p>
       <h1 className="display text-5xl">Numbers</h1>
-      {(
-        [
-          ["WhatsApp", wa, setWa],
-          ["Contact phone", tel, setTel],
-          ["Payment number", pay, setPay],
-          ["Instagram URL", ig, setIg],
-          ["Line", line, setLine],
-        ] as const
-      ).map(([label, value, set]) => (
-        <label key={label} className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
-          <span className="flex items-center gap-2">
-            {label === "WhatsApp" ? <WhatsAppMark className="h-3.5 w-3.5 text-[#25D366]" /> : null}
-            {label === "Contact phone" ? <Phone className="h-3.5 w-3.5" strokeWidth={1.5} /> : null}
-            {label === "Payment number" ? <span className="text-[10px] tracking-[0.08em]">PAY</span> : null}
-            {label === "Instagram URL" ? <InstagramMark className="h-3.5 w-3.5" /> : null}
-            {label}
-          </span>
-          <input
-            value={value}
-            onChange={(e) => set(e.target.value)}
-            className="mt-2 w-full border border-line bg-transparent px-3 py-3 text-sm normal-case tracking-normal outline-none"
-          />
-        </label>
-      ))}
+      <p className="text-sm leading-relaxed text-mute">
+        WhatsApp opens chat. Call dials. Pay copies into Mobile Money.
+      </p>
+      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
+        <span className="flex items-center gap-2">
+          <WhatsAppMark className="h-3.5 w-3.5 text-[#25D366]" />
+          WhatsApp
+        </span>
+        <input
+          type="tel"
+          name="whatsapp"
+          autoComplete="tel"
+          placeholder="+256…"
+          value={wa}
+          onChange={(e) => setWa(e.target.value)}
+          className="mt-2 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+        />
+      </label>
+      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
+        <span className="flex items-center gap-2">
+          <Phone className="h-3.5 w-3.5" strokeWidth={1.5} />
+          Call
+        </span>
+        <input
+          type="tel"
+          name="phone"
+          autoComplete="tel"
+          placeholder="+256…"
+          value={tel}
+          onChange={(e) => setTel(e.target.value)}
+          className="mt-2 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+        />
+      </label>
+      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
+        <span className="flex items-center gap-2">
+          <span className="text-[10px] tracking-[0.08em]">PAY</span>
+          Pay
+        </span>
+        <input
+          type="tel"
+          name="payment"
+          inputMode="tel"
+          placeholder="+256…"
+          value={pay}
+          onChange={(e) => setPay(e.target.value)}
+          className="mt-2 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+        />
+      </label>
+      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
+        <span className="flex items-center gap-2">
+          <InstagramMark className="h-3.5 w-3.5" />
+          Instagram
+        </span>
+        <input
+          type="url"
+          name="instagram"
+          placeholder="https://www.instagram.com/binti_dezigns"
+          value={ig}
+          onChange={(e) => setIg(e.target.value)}
+          className="mt-2 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+        />
+      </label>
+      <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
+        Line
+        <input
+          value={line}
+          onChange={(e) => setLine(e.target.value)}
+          className="mt-2 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+        />
+      </label>
       <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
         About
         <textarea
           value={story}
           onChange={(e) => setStory(e.target.value)}
-          className="mt-2 h-32 w-full border border-line bg-transparent px-3 py-3 text-sm normal-case tracking-normal outline-none"
+          className="mt-2 h-32 w-full border border-line bg-paper px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
         />
       </label>
-      <button type="submit" className="bg-ink px-6 py-3 text-xs tracking-[0.22em] uppercase text-paper">
-        Save house
+      <button
+        type="submit"
+        disabled={saving}
+        className="bg-ink px-6 py-3 text-xs tracking-[0.22em] uppercase text-paper disabled:opacity-40"
+      >
+        {saving ? "Saving…" : "Save numbers"}
       </button>
       {note ? <p className="text-sm text-mute">{note}</p> : null}
+      {error ? <p className="text-sm text-mute">{error}</p> : null}
     </form>
   );
 }

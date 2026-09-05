@@ -67,27 +67,19 @@ export function SiteShell({
             ))}
           </nav>
           <div className={`flex items-center gap-4 ${ink}`}>
-            {houseAccount ? (
-              <Link to="/atelier-studio" className="text-[0.62rem] tracking-[0.2em] uppercase text-mute">
-                Floor
-              </Link>
-            ) : null}
             <HouseSignedIn>
               {houseAccount ? null : (
-                <Link to="/account" aria-label="Saved" className="text-ink">
+                <Link to="/account" aria-label="Saved" className={ink}>
                   <CircleUser className="h-5 w-5" strokeWidth={1.4} />
                 </Link>
               )}
-              <button type="button" className="text-[0.62rem] tracking-[0.16em] uppercase text-mute" onClick={() => void houseSignOut()}>
-                Sign out
-              </button>
             </HouseSignedIn>
             {user ? null : (
-              <Link to="/login" aria-label="Account" className="text-ink">
+              <Link to="/login" aria-label="Account" className={ink}>
                 <CircleUser className="h-5 w-5" strokeWidth={1.4} />
               </Link>
             )}
-            <Link to="/bag" aria-label="Cart" className="relative text-ink">
+            <Link to="/bag" aria-label="Cart" className={`relative ${ink}`}>
               <ShoppingBag className="h-5 w-5" strokeWidth={1.4} />
               {count ? (
                 <span className="absolute -right-2 -top-2 min-w-4 text-center text-[0.6rem]">{count}</span>

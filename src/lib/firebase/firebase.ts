@@ -1,6 +1,7 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 export const HOUSE_EMAIL = "bintidesigns442@gmail.com";
 
@@ -26,6 +27,7 @@ export function firebaseReady() {
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
+let storage: FirebaseStorage | null = null;
 
 export function getFirebaseApp() {
   if (typeof window === "undefined") return null;
@@ -45,4 +47,11 @@ export function getFirebaseDb() {
   if (!instance) return null;
   db ??= getFirestore(instance);
   return db;
+}
+
+export function getFirebaseStorage() {
+  const instance = getFirebaseApp();
+  if (!instance) return null;
+  storage ??= getStorage(instance);
+  return storage;
 }

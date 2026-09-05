@@ -4,7 +4,8 @@ import {
   compressImageVariants,
   compressVideoFile,
 } from "@/lib/media";
-import { firebaseAuth } from "@/lib/firebase/app";
+import { firebaseAuth, getFirebaseStorage } from "@/lib/firebase/app";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export type StoredStill = {
   thumb: string;
@@ -19,6 +20,24 @@ async function houseToken() {
   } catch {
     return "";
   }
+}
+
+function archiveMessage(err: unknown) {
+  const text = err instanceof Error ? err.message : String(err || "");
+  if (/access denied/i.test(text) || /AccessDenied/i.test(text)) {
+    return "The R2 key was refused. The still was sent to the house archive instead.";
+  }
+  return text || "The archive would not take that file.";
+}
+
+async function putFirebase(filename: string, blob: Blob) {
+  const storage = getFirebaseStorage();
+  const user = firebaseAuth()?.currentUser;
+  if (!storage || !user) throw new Error("Sign in with the house Google first.");
+  const path = `looks/${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]+/g, "-")}`;
+  const fileRef = ref(storage, path);
+  await uploadBytes(fileRef, blob, { contentType: blob.type || "image/jpeg" });
+  return getDownloadURL(fileRef);
 }
 
 async function putBlob(token: string, filename: string, blob: Blob, kind: "image" | "video") {
@@ -37,16 +56,26 @@ async function putBlob(token: string, filename: string, blob: Blob, kind: "image
       if (sent.ok) return ticket.readUrl || ticket.key;
     }
   } catch {
-    /* fall through to the house put */
+    /* try the house put, then Firebase */
   }
-  const dataUrl = await blobToDataUrl(blob);
-  const stored = await storeMedia({
-    data: { token, idToken, filename, contentType, dataUrl },
-  });
-  if (!stored.url || stored.url.startsWith("data:")) {
-    throw new Error("The archive would not take that file.");
+  try {
+    const dataUrl = await blobToDataUrl(blob);
+    const stored = await storeMedia({
+      data: { token, idToken, filename, contentType, dataUrl },
+    });
+    if (stored.url && !stored.url.startsWith("data:")) return stored.url;
+  } catch (err) {
+    try {
+      return await putFirebase(filename, blob);
+    } catch {
+      throw new Error(archiveMessage(err));
+    }
   }
-  return stored.url;
+  try {
+    return await putFirebase(filename, blob);
+  } catch (err) {
+    throw new Error(archiveMessage(err));
+  }
 }
 
 export async function uploadStill(token: string, file: File): Promise<StoredStill> {

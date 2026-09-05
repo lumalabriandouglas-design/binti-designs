@@ -41,11 +41,11 @@ export function r2Configured() {
 }
 
 export function r2Bucket() {
-  return required("R2_BUCKET") || required("R2_BUCKET_ALT") || "binti-designs";
+  return required("R2_BUCKET") || required("R2_BUCKET_ALT") || "binti-design";
 }
 
 function buckets() {
-  return [...new Set([required("R2_BUCKET"), required("R2_BUCKET_ALT"), "binti-designs", "binti designs"].filter(Boolean))];
+  return [...new Set([required("R2_BUCKET"), required("R2_BUCKET_ALT"), "binti-design", "binti-designs"].filter(Boolean))];
 }
 
 let client: S3Client | null = null;

@@ -9,6 +9,7 @@ import {
   saveHouseNotes,
   saveLook,
   setLookSoldOut,
+  setLookHidden,
   type Look,
 } from "@/lib/firebase/catalog";
 import { HOUSE_EMAIL } from "@/lib/firebase/firebase";
@@ -194,6 +195,7 @@ function Dashboard({ email }: { email: string }) {
           ),
           video_url: piece.video_url,
           sold_out: piece.sold_out,
+          hidden: false,
           created_at: piece.created_at,
         }),
       );
@@ -358,11 +360,13 @@ function Rack({
               <p>{look.title}</p>
               <p className="text-sm text-mute">{look.subtitle || look.category}</p>
               <p className="mt-2 text-sm text-mute">
-                {look.sold_out
-                  ? "Reserved"
-                  : look.price_cents
-                    ? formatMoney(look.price_cents, look.currency)
-                    : "Inquiry"}
+                {look.hidden
+                  ? "Hidden"
+                  : look.sold_out
+                    ? "Reserved"
+                    : look.price_cents
+                      ? formatMoney(look.price_cents, look.currency)
+                      : "Inquiry"}
               </p>
               <div className="mt-4 flex flex-wrap gap-2 text-[0.62rem] tracking-[0.16em] uppercase">
                 <button type="button" className="border border-line px-3 py-2" onClick={() => onEdit(look)}>
@@ -387,6 +391,17 @@ function Rack({
                   }}
                 >
                   {look.sold_out ? "Back on rack" : "Sold out"}
+                </button>
+                <button
+                  type="button"
+                  className="border border-line px-3 py-2"
+                  onClick={async () => {
+                    if (look.id.startsWith("local-")) return;
+                    await setLookHidden(look.id, !look.hidden);
+                    onRefresh();
+                  }}
+                >
+                  {look.hidden ? "Show" : "Hide"}
                 </button>
                 <button
                   type="button"
@@ -433,6 +448,7 @@ function LookForm({
   const [gallery, setGallery] = useState<string[]>(existing?.gallery ?? []);
   const [video, setVideo] = useState(existing?.video_url ?? "");
   const [soldOut, setSold] = useState(existing?.sold_out ?? false);
+  const [hidden, setHidden] = useState(existing?.hidden ?? false);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
 
@@ -450,6 +466,7 @@ function LookForm({
         gallery,
         video_url: video,
         sold_out: soldOut,
+        hidden,
         slug: existing?.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       };
       if (existing?.id.startsWith("local-") && token) {
@@ -676,6 +693,10 @@ function LookForm({
           <label className="flex items-center gap-3 text-sm text-mute">
             <input type="checkbox" checked={soldOut} onChange={(e) => setSold(e.target.checked)} />
             Sold out
+          </label>
+          <label className="flex items-center gap-3 text-sm text-mute">
+            <input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} />
+            Hide from the public house
           </label>
           {busy ? <p className="text-sm text-mute">{busy}</p> : null}
           {error ? <p className="text-sm text-mute">{error}</p> : null}

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { SiteShell } from "@/components/site-shell";
 import { getPublicCatalog } from "@/lib/server/boutique";
-import { listLooks } from "@/lib/firebase/catalog";
+import { listPublicLooks } from "@/lib/firebase/catalog";
 import { formatMoney } from "@/lib/utils";
 
 export const Route = createFileRoute("/collection")({
@@ -22,7 +22,7 @@ const FRAMES = [
 
 function Collection() {
   const data = Route.useLoaderData();
-  const firestore = useQuery({ queryKey: ["looks"], queryFn: listLooks });
+  const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
   const pieces =
     firestore.data && firestore.data.length
       ? firestore.data

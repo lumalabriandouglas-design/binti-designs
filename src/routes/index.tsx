@@ -6,7 +6,7 @@ import { SiteShell } from "@/components/site-shell";
 import { HeroSlider } from "@/components/hero-slider";
 import { CallbackForm } from "@/components/callback-form";
 import { getPublicCatalog } from "@/lib/server/boutique";
-import { listLooks } from "@/lib/firebase/catalog";
+import { listPublicLooks } from "@/lib/firebase/catalog";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicCatalog(),
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const data = Route.useLoaderData();
-  const firestore = useQuery({ queryKey: ["looks"], queryFn: listLooks });
+  const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
   const pieces =
     firestore.data && firestore.data.length
       ? firestore.data

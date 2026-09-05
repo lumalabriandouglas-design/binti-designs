@@ -12,7 +12,7 @@ import {
 import { GoogleMark } from "@/components/brand-marks";
 import { isHouseAccount } from "@/lib/house";
 import { getPublicCatalog } from "@/lib/server/boutique";
-import { listLooks } from "@/lib/firebase/catalog";
+import { listPublicLooks } from "@/lib/firebase/catalog";
 import { takeNext } from "@/lib/client-closet";
 
 export const Route = createFileRoute("/login")({ component: Login });
@@ -21,7 +21,7 @@ function Login() {
   const nav = useNavigate();
   const { user, isPending } = useHouseUser();
   const catalog = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
-  const looks = useQuery({ queryKey: ["looks"], queryFn: listLooks });
+  const looks = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

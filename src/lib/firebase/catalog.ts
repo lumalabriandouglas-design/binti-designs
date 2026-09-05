@@ -26,6 +26,7 @@ export type Look = {
   gallery: string[];
   video_url: string;
   sold_out: boolean;
+  hidden: boolean;
   created_at: string;
 };
 
@@ -56,6 +57,7 @@ function asLook(id: string, data: DocumentData): Look {
     gallery: Array.isArray(data.gallery) ? data.gallery.map(String) : [],
     video_url: String(data.video_url ?? ""),
     sold_out: Boolean(data.sold_out),
+    hidden: Boolean(data.hidden),
     created_at: String(data.created_at ?? ""),
   };
 }
@@ -67,6 +69,16 @@ export async function listLooks(): Promise<Look[]> {
   return snap.docs
     .map((row) => asLook(row.id, row.data()))
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export async function listPublicLooks(): Promise<Look[]> {
+  return (await listLooks()).filter((look) => !look.hidden);
+}
+
+export async function setLookHidden(id: string, hidden: boolean) {
+  const db = getFirebaseDb();
+  if (!db) throw new Error("Archive is not connected.");
+  await updateDoc(doc(db, "pieces", id), { hidden });
 }
 
 export async function saveLook(look: Partial<Look> & { title: string; cover_url: string }) {
@@ -85,6 +97,7 @@ export async function saveLook(look: Partial<Look> & { title: string; cover_url:
     gallery: look.gallery ?? [],
     video_url: look.video_url ?? "",
     sold_out: Boolean(look.sold_out),
+    hidden: Boolean(look.hidden),
     created_at: look.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };

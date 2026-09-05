@@ -12,7 +12,7 @@ import { useBag } from "@/lib/bag";
 import { formatMoney } from "@/lib/utils";
 import { parseGallery } from "@/lib/media";
 import { CallbackForm } from "@/components/callback-form";
-import { listLooks, getHouseNotes } from "@/lib/firebase/catalog";
+import { listPublicLooks, getHouseNotes } from "@/lib/firebase/catalog";
 import { HouseContact, mergeHouse } from "@/components/house-contact";
 import { HouseSignedIn, HouseSignedOut, useHouseUser } from "@/lib/firebase/session";
 import { rememberNext, stashPendingLook } from "@/lib/client-closet";
@@ -27,7 +27,7 @@ function PiecePage() {
   });
   const cat = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
 
-  const looks = useQuery({ queryKey: ["looks"], queryFn: listLooks });
+  const looks = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
   const firestorePiece = looks.data?.find((row) => row.slug === slug);
   const piece = firestorePiece
     ? {

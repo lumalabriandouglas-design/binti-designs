@@ -19,10 +19,10 @@ function Atelier() {
 
   return (
     <SiteShell settings={data.settings}>
-      <section className="mx-auto grid max-w-7xl gap-16 px-6 py-24 md:grid-cols-2 md:px-10">
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 sm:py-20 md:grid-cols-2 md:gap-16 md:px-10 md:py-24">
         <div>
           <p className="eyebrow">Maison</p>
-          <h1 className="mt-6 text-6xl md:text-7xl">The house</h1>
+          <h1 className="mt-6 text-4xl sm:text-6xl md:text-7xl">The house</h1>
           <p className="mt-8 max-w-md text-sm leading-relaxed text-ink-soft">{house.about}</p>
           <div className="mt-10">
             <HouseContact house={house} />
@@ -31,7 +31,7 @@ function Atelier() {
         {cover ? <img src={cover} alt="" className="w-full bg-paper-2 object-contain" /> : null}
       </section>
       <section className="border-t border-line">
-        <div className="mx-auto max-w-xl px-6 py-24">
+        <div className="mx-auto max-w-xl px-5 py-16 sm:px-8 sm:py-24">
           <CallbackForm />
         </div>
       </section>

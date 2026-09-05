@@ -85,16 +85,15 @@ function StudioDoor({
   denied: string;
   setDenied: (value: string) => void;
 }) {
-  const [email, setEmail] = useState(HOUSE_EMAIL);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   return (
     <QuietFrame>
-      <BananaMark className="mx-auto mb-8 h-8 w-8" />
-      <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-gold">Private floor</p>
-      <h1 className="display mt-4 text-5xl text-[#f6f1ea]">Welcome back, Natasha.</h1>
-      <p className="mt-4 text-sm text-[#f6f1ea]/70">
-        Designer floor and house book. Only Natasha opens this door.
+      <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-gold">Private</p>
+      <h1 className="display mt-4 text-4xl text-[#f6f1ea] sm:text-5xl">This floor is closed.</h1>
+      <p className="mt-4 text-sm text-[#f6f1ea]/60">
+        Sign in with the house Google. Wrong accounts are turned away.
       </p>
       <button
         type="button"
@@ -104,7 +103,7 @@ function StudioDoor({
           try {
             await houseGoogleStrict();
           } catch (err) {
-            setDenied(err instanceof Error ? err.message : "Access denied.");
+            setDenied("Access denied.");
           }
         }}
       >
@@ -112,40 +111,45 @@ function StudioDoor({
         Continue with Google
       </button>
       <form
-        className="mt-6 space-y-3 text-left"
+        className="mt-8 space-y-3 text-left"
+        autoComplete="off"
         onSubmit={async (e) => {
           e.preventDefault();
           setDenied("");
           try {
             if (!isHouseAccount(email)) {
-              setDenied("This key does not open the floor.");
+              setDenied("Access denied.");
               return;
             }
             await houseSignIn(email, password);
-          } catch (err) {
-            setDenied(err instanceof Error ? err.message : "Could not open.");
+          } catch {
+            setDenied("Access denied.");
           }
         }}
       >
         <input
           type="email"
+          name="floor-email"
+          autoComplete="off"
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
+          className="w-full border border-[#f6f1ea]/20 bg-transparent px-3 py-3 text-sm text-[#f6f1ea] outline-none"
         />
         <input
           required
           type="password"
+          autoComplete="current-password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
+          className="w-full border border-[#f6f1ea]/20 bg-transparent px-3 py-3 text-sm text-[#f6f1ea] outline-none"
         />
         <button type="submit" className="w-full border border-[#f6f1ea]/30 py-3 text-xs tracking-[0.22em] uppercase text-[#f6f1ea]">
           Open
         </button>
       </form>
-      {denied ? <p className="mt-6 text-sm text-mute">{denied}</p> : null}
+      {denied ? <p className="mt-6 text-sm text-[#f6f1ea]/50">{denied}</p> : null}
     </QuietFrame>
   );
 }
@@ -210,7 +214,7 @@ function Dashboard({ email }: { email: string }) {
 
   return (
     <div className="min-h-dvh bg-[#f3eee6] text-ink lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
-      <aside className="bg-[#14110e] text-[#f6f1ea]">
+      <aside className="hidden bg-[#14110e] text-[#f6f1ea] lg:block">
         <div className="flex h-full flex-col px-7 py-8">
           <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-gold">Atelier</p>
           <p className="display mt-3 text-3xl">BINTI</p>
@@ -256,7 +260,24 @@ function Dashboard({ email }: { email: string }) {
         </div>
       </aside>
 
-      <div className="px-5 py-10 md:px-10">
+      <div className="px-4 py-6 sm:px-8 sm:py-10">
+        <div className="mb-8 flex gap-2 overflow-x-auto pb-2 lg:hidden">
+          {rooms.map((room) => (
+            <button
+              key={room.id}
+              type="button"
+              onClick={() => {
+                if (room.id === "table") setEditing(null);
+                setTab(room.id);
+              }}
+              className={`shrink-0 px-4 py-2 text-[10px] tracking-[0.16em] uppercase ${
+                tab === room.id ? "bg-[#14110e] text-gold" : "border border-line text-mute"
+              }`}
+            >
+              {room.label}
+            </button>
+          ))}
+        </div>
         {tab === "rack" ? (
           <Rack
             looks={rack}
@@ -490,7 +511,7 @@ function LookForm({
 
   return (
     <form
-      className="mx-auto max-w-2xl space-y-4"
+      className="mx-auto max-w-5xl"
       onSubmit={(e) => {
         e.preventDefault();
         if (!cover || !title) {
@@ -500,137 +521,170 @@ function LookForm({
         save.mutate();
       }}
     >
-      <p className="text-[0.62rem] tracking-[0.28em] uppercase text-mute">
-        {existing ? "Edit piece" : "New piece"}
-      </p>
-      <h1 className="display text-5xl">{existing ? existing.title : "Hang in the house"}</h1>
-      <label className="block border border-dashed border-line px-4 py-8 text-center text-sm text-mute">
-        Photographs — five to eight. The first is the cover unless you choose another.
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={async (e) => {
-            const files = Array.from(e.target.files ?? []).slice(0, 8 - gallery.length);
-            for (const file of files) {
-              setBusy(`Sending ${file.name} to the archive…`);
-              try {
-                const stored = await uploadStill(token || "house", file);
-                const url = stored.display || stored.preview || stored.master;
-                setCover((current) => current || url);
-                setGallery((current) => [...current, url]);
-              } catch (err) {
-                const url = await compressImageFile(file);
-                setCover((current) => current || url);
-                setGallery((current) => [...current, url]);
-                setError(err instanceof Error ? err.message : "Archive failed; kept a local still.");
-              }
-            }
-            setBusy("");
-            e.target.value = "";
-          }}
-        />
-      </label>
-      {gallery.length ? (
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-          {gallery.map((url, index) => (
-            <div key={`${url}-${index}`} className="relative bg-paper-2">
-              <button type="button" onClick={() => setCover(url)}>
-                <img src={url} alt="" className="h-20 w-full object-contain" />
-              </button>
-              {url === cover ? (
-                <span className="absolute left-1 top-1 text-[0.55rem] uppercase tracking-[0.12em] text-mute">
-                  Cover
-                </span>
-              ) : null}
-              <button
-                type="button"
-                className="absolute right-1 top-1 text-[0.55rem] uppercase text-mute"
-                onClick={() => {
-                  const next = gallery.filter((_, i) => i !== index);
-                  setGallery(next);
-                  if (cover === url) setCover(next[0] ?? "");
-                }}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-gold">
+            {existing ? "Edit" : "Hang"}
+          </p>
+          <h1 className="display mt-2 text-4xl sm:text-5xl md:text-6xl">
+            {existing ? existing.title : "New look"}
+          </h1>
         </div>
-      ) : null}
-      <label className="block border border-dashed border-line px-4 py-6 text-center text-sm text-mute">
-        Optional film
-        <input
-          type="file"
-          accept="video/*"
-          className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setBusy("Sending film to the archive…");
-            try {
-              const url = await uploadFilm(token || "house", file);
-              setVideo(url);
-            } catch {
-              const blob = await compressVideoFile(file);
-              setVideo(await blobToDataUrl(blob));
-            }
-            setBusy("");
-            e.target.value = "";
-          }}
-        />
-      </label>
-      {video ? <video src={video} controls className="w-full bg-paper-2" /> : null}
-      <input
-        required
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
-      />
-      <input
-        placeholder="Colour / season"
-        value={subtitle}
-        onChange={(e) => setSubtitle(e.target.value)}
-        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
-      />
-      <input
-        placeholder="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
-      />
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="h-24 w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
-      />
-      <textarea
-        placeholder="Caption for the film or sitting"
-        value={caption}
-        onChange={(e) => setCaption(e.target.value)}
-        className="h-20 w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
-      />
-      <input
-        placeholder="Price UGX"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        className="w-full border border-line bg-transparent px-3 py-3 text-sm outline-none"
-      />
-      <label className="flex items-center gap-3 text-sm text-mute">
-        <input type="checkbox" checked={soldOut} onChange={(e) => setSold(e.target.checked)} />
-        Sold out
-      </label>
-      {busy ? <p className="text-sm text-mute">{busy}</p> : null}
-      {error ? <p className="text-sm text-mute">{error}</p> : null}
-      <button type="submit" className="bg-ink px-6 py-3 text-xs tracking-[0.22em] uppercase text-paper">
-        {save.isPending ? "Saving…" : existing ? "Save changes" : "Hang in the house"}
-      </button>
+        <button
+          type="submit"
+          className="bg-[#14110e] px-7 py-3 text-[11px] tracking-[0.22em] uppercase text-[#f6f1ea]"
+        >
+          {save.isPending ? "Saving…" : existing ? "Save changes" : "Hang in the house"}
+        </button>
+      </div>
+
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <section>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-mute">Photographs</p>
+          <label className="mt-3 flex min-h-48 cursor-pointer flex-col items-center justify-center border border-dashed border-[#14110e]/20 bg-[#faf7f2] px-4 py-10 text-center text-sm text-mute">
+            Drop stills here, or tap to choose. Five to eight. First frame is the cover until you pick another.
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={async (e) => {
+                const files = Array.from(e.target.files ?? []).slice(0, 8 - gallery.length);
+                for (const file of files) {
+                  setBusy(`Sending ${file.name} to the archive…`);
+                  try {
+                    const stored = await uploadStill(token || "house", file);
+                    const url = stored.display || stored.preview || stored.master;
+                    setCover((current) => current || url);
+                    setGallery((current) => [...current, url]);
+                  } catch (err) {
+                    const url = await compressImageFile(file);
+                    setCover((current) => current || url);
+                    setGallery((current) => [...current, url]);
+                    setError(err instanceof Error ? err.message : "Archive failed; kept a local still.");
+                  }
+                }
+                setBusy("");
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {gallery.length ? (
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {gallery.map((url, index) => (
+                <div key={`${url}-${index}`} className="relative bg-[#faf7f2]">
+                  <button type="button" onClick={() => setCover(url)} className="block w-full">
+                    <img src={url} alt="" className="aspect-[3/4] w-full object-contain" />
+                  </button>
+                  {url === cover ? (
+                    <span className="absolute left-2 top-2 bg-[#14110e] px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-gold">
+                      Cover
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="absolute right-2 top-2 text-[11px] text-mute"
+                    onClick={() => {
+                      const next = gallery.filter((_, i) => i !== index);
+                      setGallery(next);
+                      if (cover === url) setCover(next[0] ?? "");
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <label className="mt-6 flex min-h-28 cursor-pointer flex-col items-center justify-center border border-dashed border-[#14110e]/20 bg-[#faf7f2] px-4 py-8 text-center text-sm text-mute">
+            Optional film
+            <input
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setBusy("Sending film to the archive…");
+                try {
+                  const url = await uploadFilm(token || "house", file);
+                  setVideo(url);
+                } catch {
+                  const blob = await compressVideoFile(file);
+                  setVideo(await blobToDataUrl(blob));
+                }
+                setBusy("");
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {video ? <video src={video} controls className="mt-4 w-full bg-[#faf7f2]" /> : null}
+        </section>
+
+        <section className="space-y-4">
+          <label className="block text-[10px] uppercase tracking-[0.18em] text-mute">
+            Title
+            <input
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="mt-2 w-full border border-[#14110e]/15 bg-transparent px-3 py-3 text-base normal-case tracking-normal text-ink outline-none"
+            />
+          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-[10px] uppercase tracking-[0.18em] text-mute">
+              Colour / season
+              <input
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                className="mt-2 w-full border border-[#14110e]/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+              />
+            </label>
+            <label className="block text-[10px] uppercase tracking-[0.18em] text-mute">
+              Category
+              <input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="mt-2 w-full border border-[#14110e]/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+              />
+            </label>
+          </div>
+          <label className="block text-[10px] uppercase tracking-[0.18em] text-mute">
+            Description
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-2 h-28 w-full border border-[#14110e]/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+            />
+          </label>
+          <label className="block text-[10px] uppercase tracking-[0.18em] text-mute">
+            Caption
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              className="mt-2 h-20 w-full border border-[#14110e]/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+            />
+          </label>
+          <label className="block text-[10px] uppercase tracking-[0.18em] text-mute">
+            Price UGX
+            <input
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="mt-2 w-full border border-[#14110e]/15 bg-transparent px-3 py-3 text-sm normal-case tracking-normal text-ink outline-none"
+            />
+          </label>
+          <label className="flex items-center gap-3 text-sm text-mute">
+            <input type="checkbox" checked={soldOut} onChange={(e) => setSold(e.target.checked)} />
+            Sold out
+          </label>
+          {busy ? <p className="text-sm text-mute">{busy}</p> : null}
+          {error ? <p className="text-sm text-mute">{error}</p> : null}
+        </section>
+      </div>
     </form>
   );
 }
+
 
 function HouseBook({
   token,

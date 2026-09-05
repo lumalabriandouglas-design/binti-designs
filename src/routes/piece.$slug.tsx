@@ -102,7 +102,7 @@ function PieceView({ piece }: { piece: Piece }) {
   });
 
   return (
-    <section className="mx-auto grid max-w-6xl gap-10 px-5 py-10 md:grid-cols-2 md:py-16">
+    <section className="mx-auto grid max-w-6xl gap-8 px-5 py-8 sm:gap-10 sm:py-12 md:grid-cols-2 md:py-16">
       <div className="bg-paper-2">
         {current ? (
           <img
@@ -139,7 +139,7 @@ function PieceView({ piece }: { piece: Piece }) {
       </div>
       <div className="md:pt-8">
         <p className="eyebrow">{piece.category}</p>
-        <h1 className="display mt-3 text-6xl">{piece.title}</h1>
+        <h1 className="display mt-3 text-4xl sm:text-5xl md:text-6xl">{piece.title}</h1>
         {piece.subtitle ? <p className="mt-2 text-lg text-mute">{piece.subtitle}</p> : null}
         <p className="mt-8 max-w-md text-sm leading-relaxed text-ink-soft">{piece.description}</p>
         {piece.caption ? (

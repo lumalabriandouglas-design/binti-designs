@@ -51,8 +51,8 @@ export function SiteShell({
           float ? "bg-transparent" : "border-b border-line bg-paper/92 backdrop-blur-sm"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-5 md:px-10">
-          <Link to="/" className={`display text-2xl tracking-tight md:text-3xl ${ink}`}>
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5 md:px-10">
+          <Link to="/" className={`display text-xl tracking-tight sm:text-2xl md:text-3xl ${ink}`}>
             BINTI DESIGNS
           </Link>
           <nav className="hidden items-center gap-8 text-[11px] tracking-[0.18em] uppercase md:flex">
@@ -83,7 +83,8 @@ export function SiteShell({
             </Link>
           </div>
         </div>
-        <nav className="flex gap-6 overflow-x-auto border-t border-line px-5 py-3 text-[0.65rem] tracking-[0.22em] uppercase md:hidden">
+        {float ? null : (
+        <nav className="flex gap-5 overflow-x-auto border-t border-line px-4 py-3 text-[0.65rem] tracking-[0.22em] uppercase md:hidden">
           {NAV.map((item) => (
             <Link key={item.to} to={item.to} className="shrink-0 text-mute">
               {item.label}
@@ -95,11 +96,12 @@ export function SiteShell({
             </Link>
           )}
         </nav>
+        )}
       </header>
-      <main className={overlay ? "" : "pt-24"}>{children}</main>
-      <footer className="mt-32 border-t border-line">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-3 md:px-10">
-          <p className="text-4xl md:text-5xl">BINTI DESIGNS</p>
+      <main className={overlay ? "" : "pt-20 sm:pt-24"}>{children}</main>
+      <footer className="mt-16 border-t border-line sm:mt-24 md:mt-32">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 sm:py-16 md:grid-cols-3 md:px-10 md:py-20">
+          <p className="text-3xl sm:text-4xl md:text-5xl">BINTI DESIGNS</p>
           <p className="text-sm leading-relaxed text-mute">{house.tagline}</p>
           <div className="text-sm leading-7 text-mute">
             {house.instagram ? (

@@ -33,9 +33,9 @@ function Home() {
     <SiteShell settings={data.settings} overlay>
       <DrapeReveal house="BINTI DESIGNS">
       <HeroSlider pieces={pieces} />
-      <section className="mx-auto max-w-7xl px-6 py-28 md:px-10">
-        <div className="mb-20 flex items-end justify-between gap-6">
-          <h2 className="text-5xl md:text-7xl">Now on the rack</h2>
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24 md:px-10 md:py-28">
+        <div className="mb-12 flex items-end justify-between gap-6 sm:mb-20">
+          <h2 className="text-3xl sm:text-5xl md:text-7xl">Now on the rack</h2>
           <Link to="/collection" className="eyebrow text-ink">
             All looks
           </Link>
@@ -54,7 +54,7 @@ function Home() {
               </Link>
               <div className="pb-4">
                 <p className="eyebrow">{piece.sold_out ? "Reserved" : "Available"}</p>
-                <h3 className="display mt-4 text-4xl md:text-6xl">{piece.title}</h3>
+                <h3 className="display mt-4 text-3xl sm:text-4xl md:text-6xl">{piece.title}</h3>
                 <p className="mt-3 text-mute">{piece.subtitle}</p>
                 <Link
                   to="/piece/$slug"
@@ -69,10 +69,10 @@ function Home() {
         </div>
       </section>
       <section className="border-t border-line">
-        <div className="mx-auto grid max-w-7xl gap-20 px-6 py-28 md:grid-cols-2 md:px-10">
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-24 md:grid-cols-2 md:gap-20 md:px-10 md:py-28">
           <div>
             <p className="eyebrow">House</p>
-            <h2 className="mt-6 text-5xl md:text-7xl">A private floor in Kampala.</h2>
+            <h2 className="mt-6 text-3xl sm:text-5xl md:text-7xl">A private floor in Kampala.</h2>
             <p className="mt-8 max-w-md text-sm leading-relaxed text-mute">{data.settings?.about}</p>
           </div>
           <CallbackForm />

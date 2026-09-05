@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CircleUser, ShoppingBag } from "lucide-react";
-import { HouseSignedIn, houseSignOut, useHouseUser } from "@/lib/firebase/session";
+import { ShoppingBag } from "lucide-react";
+import { useHouseUser } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
 import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
@@ -66,17 +66,13 @@ export function SiteShell({
               </Link>
             ))}
           </nav>
-          <div className={`flex items-center gap-4 ${ink}`}>
-            <HouseSignedIn>
-              {houseAccount ? null : (
-                <Link to="/account" aria-label="Saved" className={ink}>
-                  <CircleUser className="h-5 w-5" strokeWidth={1.4} />
-                </Link>
-              )}
-            </HouseSignedIn>
-            {user ? null : (
-              <Link to="/login" aria-label="Account" className={ink}>
-                <CircleUser className="h-5 w-5" strokeWidth={1.4} />
+          <div className={`flex items-center gap-5 ${ink}`}>
+            {houseAccount ? null : (
+              <Link
+                to="/login"
+                className={`text-[11px] tracking-[0.18em] uppercase ${ink}`}
+              >
+                Sign in
               </Link>
             )}
             <Link to="/bag" aria-label="Cart" className={`relative ${ink}`}>
@@ -93,6 +89,11 @@ export function SiteShell({
               {item.label}
             </Link>
           ))}
+          {houseAccount ? null : (
+            <Link to="/login" className="shrink-0 text-mute">
+              Sign in
+            </Link>
+          )}
         </nav>
       </header>
       <main className={overlay ? "" : "pt-24"}>{children}</main>

@@ -22,6 +22,7 @@ import {
 import { isHouseAccount } from "@/lib/house";
 import { compressVideoFile, parseGallery } from "@/lib/media";
 import { uploadFilm, uploadStill } from "@/lib/client/upload-media";
+import { clearHangDraft, readHangDraft, writeHangDraft } from "@/lib/hang-draft";
 import { Phone } from "lucide-react";
 import { GoogleMark, InstagramMark, TikTokMark, WhatsAppMark } from "@/components/brand-marks";
 import { BananaMark, MinionPeek } from "@/components/minion";
@@ -451,6 +452,51 @@ function LookForm({
   const [hidden, setHidden] = useState(existing?.hidden ?? false);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
+  const [draftNote, setDraftNote] = useState("");
+  const slot = existing?.id || "new";
+
+  useEffect(() => {
+    if (existing) return;
+    const draft = readHangDraft(slot);
+    if (!draft) return;
+    if (!draft.title && !draft.cover && !draft.gallery.length) return;
+    setTitle(draft.title);
+    setSubtitle(draft.subtitle);
+    setDescription(draft.description);
+    setCaption(draft.caption);
+    setCategory(draft.category || "Look");
+    setPrice(draft.price);
+    setCover(draft.cover);
+    setGallery(draft.gallery);
+    setVideo(draft.video);
+    setSold(draft.soldOut);
+    setHidden(draft.hidden);
+    setDraftNote("A draft was kept on this machine.");
+  }, [existing, slot]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      writeHangDraft({
+        slot,
+        title,
+        subtitle,
+        description,
+        caption,
+        category,
+        price,
+        cover,
+        gallery,
+        video,
+        soldOut,
+        hidden,
+        savedAt: Date.now(),
+      });
+      if (title || cover || gallery.length) {
+        setDraftNote("Draft saved on this machine.");
+      }
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [slot, title, subtitle, description, caption, category, price, cover, gallery, video, soldOut, hidden]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -522,7 +568,11 @@ function LookForm({
         });
       }
     },
-    onSuccess: onSaved,
+    onSuccess: () => {
+      clearHangDraft(slot);
+      setDraftNote("");
+      onSaved();
+    },
     onError: (err) => setError(err instanceof Error ? err.message : "Could not save."),
   });
 
@@ -546,13 +596,64 @@ function LookForm({
           <h1 className="display mt-2 text-4xl sm:text-5xl md:text-6xl">
             {existing ? existing.title : "New look"}
           </h1>
+          {draftNote ? <p className="mt-2 text-xs text-mute">{draftNote}</p> : null}
         </div>
+        <div className="flex flex-wrap gap-2">
         <button
           type="submit"
           className="bg-[#14110e] px-7 py-3 text-[11px] tracking-[0.22em] uppercase text-[#f6f1ea]"
         >
           {save.isPending ? "Saving…" : existing ? "Save changes" : "Hang in the house"}
         </button>
+        <button
+          type="button"
+          className="border border-[#14110e]/20 px-5 py-3 text-[11px] tracking-[0.18em] uppercase"
+          onClick={async () => {
+            writeHangDraft({
+              slot,
+              title,
+              subtitle,
+              description,
+              caption,
+              category,
+              price,
+              cover,
+              gallery,
+              video,
+              soldOut,
+              hidden: true,
+              savedAt: Date.now(),
+            });
+            if (title && cover) {
+              try {
+                await saveLook({
+                  id: existing && !existing.id.startsWith("local-") ? existing.id : undefined,
+                  title,
+                  subtitle,
+                  description,
+                  caption,
+                  category,
+                  price_cents: Math.round(Number(price || 0) * 100),
+                  currency: "UGX",
+                  cover_url: cover,
+                  gallery,
+                  video_url: video,
+                  sold_out: soldOut,
+                  hidden: true,
+                  created_at: existing?.created_at,
+                });
+                setDraftNote("Draft kept in the house, hidden from the public floor.");
+              } catch {
+                setDraftNote("Draft kept on this machine until the line comes back.");
+              }
+            } else {
+              setDraftNote("Draft kept on this machine.");
+            }
+          }}
+        >
+          Save draft
+        </button>
+        </div>
       </div>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">

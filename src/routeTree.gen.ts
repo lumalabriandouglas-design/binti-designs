@@ -17,6 +17,7 @@ import { Route as BagRouteImport } from './routes/bag'
 import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as September14RouteImport } from './routes/september-14'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as PieceSlugRouteImport } from './routes/piece.$slug'
 import { Route as StudioSettingsRouteImport } from './routes/studio.settings'
@@ -63,6 +64,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const September14Route = September14RouteImport.update({
+  id: '/september-14',
+  path: '/september-14',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
+  '/september-14': typeof September14Route
   '/studio': typeof StudioRouteWithChildren
   '/piece/$slug': typeof PieceSlugRoute
   '/studio/settings': typeof StudioSettingsRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
+  '/september-14': typeof September14Route
   '/studio': typeof StudioRouteWithChildren
   '/piece/$slug': typeof PieceSlugRoute
   '/studio/settings': typeof StudioSettingsRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
+  '/september-14': typeof September14Route
   '/studio': typeof StudioRouteWithChildren
   '/piece/$slug': typeof PieceSlugRoute
   '/studio/settings': typeof StudioSettingsRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/journal'
     | '/login'
+    | '/september-14'
     | '/studio'
     | '/piece/$slug'
     | '/studio/settings'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/journal'
     | '/login'
+    | '/september-14'
     | '/studio'
     | '/piece/$slug'
     | '/studio/settings'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/journal'
     | '/login'
+    | '/september-14'
     | '/studio'
     | '/piece/$slug'
     | '/studio/settings'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   CollectionRoute: typeof CollectionRoute
   JournalRoute: typeof JournalRoute
   LoginRoute: typeof LoginRoute
+  September14Route: typeof September14Route
   StudioRoute: typeof StudioRouteWithChildren
   PieceSlugRoute: typeof PieceSlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -255,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/september-14': {
+      id: '/september-14'
+      path: '/september-14'
+      fullPath: '/september-14'
+      preLoaderRoute: typeof September14RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/studio': {
       id: '/studio'
       path: '/studio'
@@ -315,6 +335,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectionRoute: CollectionRoute,
   JournalRoute: JournalRoute,
   LoginRoute: LoginRoute,
+  September14Route: September14Route,
   StudioRoute: StudioRouteWithChildren,
   PieceSlugRoute: PieceSlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

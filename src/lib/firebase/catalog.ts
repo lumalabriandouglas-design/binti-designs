@@ -43,6 +43,40 @@ export type Inquiry = {
   createdAt: string;
 };
 
+function asMediaUrl(item: unknown): string {
+  if (!item) return "";
+  if (typeof item === "string") {
+    const trimmed = item.trim();
+    if (trimmed.startsWith("{")) {
+      try {
+        return asMediaUrl(JSON.parse(trimmed));
+      } catch {
+        return trimmed;
+      }
+    }
+    if (trimmed === "[object Object]") return "";
+    return trimmed;
+  }
+  if (typeof item === "object") {
+    const row = item as { display?: string; master?: string; thumb?: string; url?: string };
+    return asMediaUrl(row.display || row.master || row.thumb || row.url || "");
+  }
+  return "";
+}
+
+function asGallery(raw: unknown): string[] {
+  if (!raw) return [];
+  if (typeof raw === "string") {
+    try {
+      return asGallery(JSON.parse(raw));
+    } catch {
+      return raw ? [asMediaUrl(raw)] : [];
+    }
+  }
+  if (!Array.isArray(raw)) return [];
+  return [...new Set(raw.map(asMediaUrl).filter(Boolean))];
+}
+
 function asLook(id: string, data: DocumentData): Look {
   return {
     id,
@@ -54,9 +88,9 @@ function asLook(id: string, data: DocumentData): Look {
     price_cents: Number(data.price_cents ?? 0),
     currency: String(data.currency ?? "UGX"),
     category: String(data.category ?? "Look"),
-    cover_url: String(data.cover_url ?? ""),
-    gallery: Array.isArray(data.gallery) ? data.gallery.map(String) : [],
-    video_url: String(data.video_url ?? ""),
+    cover_url: asMediaUrl(data.cover_url) || String(data.cover_url ?? ""),
+    gallery: asGallery(data.gallery),
+    video_url: asMediaUrl(data.video_url) || String(data.video_url ?? ""),
     sold_out: Boolean(data.sold_out),
     hidden: Boolean(data.hidden),
     created_at: String(data.created_at ?? ""),

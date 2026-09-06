@@ -106,6 +106,17 @@ export async function listPublicLooks(): Promise<Look[]> {
   return resolveRefs(looks, ["cover"]);
 }
 
+export async function listPublicReels(): Promise<Look[]> {
+  const db = getFirebaseDb();
+  if (!db) return [];
+  const snap = await getDocs(collection(db, "pieces"));
+  const looks = snap.docs
+    .map((row) => asLook(row.id, row.data()))
+    .filter((look) => !look.hidden && Boolean(look.video_url))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return resolveRefs(looks, ["cover", "video"]);
+}
+
 export async function hydrateLook(look: Look): Promise<Look> {
   const [ready] = await resolveRefs([look], ["cover", "gallery", "video"]);
   return ready ?? look;

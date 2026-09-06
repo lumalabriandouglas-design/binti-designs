@@ -12,6 +12,7 @@ import { HouseContact, mergeHouse } from "@/components/house-contact";
 
 const NAV = [
   { to: "/collection", label: "Collection" },
+  { to: "/reels", label: "Reels" },
   { to: "/atelier", label: "House" },
   { to: "/journal", label: "Notes" },
 ] as const;

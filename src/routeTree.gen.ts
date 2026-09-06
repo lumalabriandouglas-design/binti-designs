@@ -17,6 +17,7 @@ import { Route as BagRouteImport } from './routes/bag'
 import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ReelsRouteImport } from './routes/reels'
 import { Route as September14RouteImport } from './routes/september-14'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as PieceSlugRouteImport } from './routes/piece.$slug'
@@ -64,6 +65,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReelsRoute = ReelsRouteImport.update({
+  id: '/reels',
+  path: '/reels',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const September14Route = September14RouteImport.update({
   id: '/september-14',
   path: '/september-14',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
+  '/reels': typeof ReelsRoute
   '/september-14': typeof September14Route
   '/studio': typeof StudioRouteWithChildren
   '/piece/$slug': typeof PieceSlugRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
+  '/reels': typeof ReelsRoute
   '/september-14': typeof September14Route
   '/studio': typeof StudioRouteWithChildren
   '/piece/$slug': typeof PieceSlugRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
+  '/reels': typeof ReelsRoute
   '/september-14': typeof September14Route
   '/studio': typeof StudioRouteWithChildren
   '/piece/$slug': typeof PieceSlugRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/journal'
     | '/login'
+    | '/reels'
     | '/september-14'
     | '/studio'
     | '/piece/$slug'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/journal'
     | '/login'
+    | '/reels'
     | '/september-14'
     | '/studio'
     | '/piece/$slug'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/journal'
     | '/login'
+    | '/reels'
     | '/september-14'
     | '/studio'
     | '/piece/$slug'
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   CollectionRoute: typeof CollectionRoute
   JournalRoute: typeof JournalRoute
   LoginRoute: typeof LoginRoute
+  ReelsRoute: typeof ReelsRoute
   September14Route: typeof September14Route
   StudioRoute: typeof StudioRouteWithChildren
   PieceSlugRoute: typeof PieceSlugRoute
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reels': {
+      id: '/reels'
+      path: '/reels'
+      fullPath: '/reels'
+      preLoaderRoute: typeof ReelsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/september-14': {
@@ -335,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectionRoute: CollectionRoute,
   JournalRoute: JournalRoute,
   LoginRoute: LoginRoute,
+  ReelsRoute: ReelsRoute,
   September14Route: September14Route,
   StudioRoute: StudioRouteWithChildren,
   PieceSlugRoute: PieceSlugRoute,

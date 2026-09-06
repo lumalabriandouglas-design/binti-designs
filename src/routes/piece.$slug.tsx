@@ -5,7 +5,6 @@ import { SiteShell } from "@/components/site-shell";
 import {
   getPieceBySlug,
   getPublicCatalog,
-  toggleWishlist,
   type Piece,
 } from "@/lib/server/boutique";
 import { useBag } from "@/lib/bag";
@@ -15,7 +14,7 @@ import { CallbackForm } from "@/components/callback-form";
 import { listPublicLooks, getHouseNotes, hydrateLook } from "@/lib/firebase/catalog";
 import { HouseContact, mergeHouse } from "@/components/house-contact";
 import { HouseSignedIn, HouseSignedOut, useHouseUser } from "@/lib/firebase/session";
-import { rememberNext, stashPendingLook } from "@/lib/client-closet";
+import { rememberNext, stashPendingLook, toggleSavedLook } from "@/lib/client-closet";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
 
@@ -105,8 +104,18 @@ function PieceView({ piece }: { piece: Piece }) {
   const [active, setActive] = useState(0);
   const current = slides[active] ?? slides[0];
   const save = useMutation({
-    mutationFn: () => toggleWishlist({ data: { pieceId: piece.id } }),
-    onSuccess: (res) => setNote(res.saved ? "Saved to your account." : "Removed from saved."),
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("Sign in to save looks.");
+      return toggleSavedLook(user.id, {
+        slug: piece.slug,
+        title: piece.title,
+        subtitle: piece.subtitle,
+        cover_url: piece.cover_url,
+        price_cents: piece.price_cents,
+        currency: piece.currency,
+      });
+    },
+    onSuccess: (res) => setNote(res.saved ? "Saved for later on your floor." : "Removed from saved."),
     onError: () => setNote("Sign in to save looks across devices."),
   });
 

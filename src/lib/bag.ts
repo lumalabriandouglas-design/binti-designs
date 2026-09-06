@@ -16,6 +16,7 @@ type BagState = {
   items: BagItem[];
   add: (item: Omit<BagItem, "qty">) => void;
   remove: (id: number) => void;
+  removeSlug: (slug: string) => void;
   setQty: (id: number, qty: number) => void;
   clear: () => void;
 };
@@ -37,6 +38,7 @@ export const useBag = create<BagState>()(
         set({ items: [...get().items, { ...item, qty: 1 }] });
       },
       remove: (id) => set({ items: get().items.filter((i) => i.id !== id) }),
+      removeSlug: (slug) => set({ items: get().items.filter((i) => i.slug !== slug) }),
       setQty: (id, qty) =>
         set({
           items: get()

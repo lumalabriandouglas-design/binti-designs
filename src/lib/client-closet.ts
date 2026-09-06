@@ -71,3 +71,44 @@ export async function hydrateClientBag(uid: string) {
   useBag.setState({ items: merged });
   await saveRemoteBag(uid, merged);
 }
+
+export type SavedLook = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  cover_url: string;
+  price_cents: number;
+  currency: string;
+  savedAt: number;
+};
+
+export async function loadSavedLooks(uid: string): Promise<SavedLook[]> {
+  const db = getFirebaseDb();
+  if (!db) return [];
+  const snap = await getDoc(doc(db, "closets", uid));
+  if (!snap.exists()) return [];
+  const rows = snap.data().looks;
+  return Array.isArray(rows) ? (rows as SavedLook[]) : [];
+}
+
+export async function writeSavedLooks(uid: string, looks: SavedLook[]) {
+  const db = getFirebaseDb();
+  if (!db) return;
+  await setDoc(doc(db, "closets", uid), { looks, updatedAt: Date.now() }, { merge: true });
+}
+
+export async function toggleSavedLook(uid: string, look: Omit<SavedLook, "savedAt">) {
+  const current = await loadSavedLooks(uid);
+  const exists = current.some((row) => row.slug === look.slug);
+  const next = exists
+    ? current.filter((row) => row.slug !== look.slug)
+    : [{ ...look, savedAt: Date.now() }, ...current];
+  await writeSavedLooks(uid, next);
+  return { saved: !exists, looks: next };
+}
+
+export async function dropSavedLook(uid: string, slug: string) {
+  const next = (await loadSavedLooks(uid)).filter((row) => row.slug !== slug);
+  await writeSavedLooks(uid, next);
+  return next;
+}

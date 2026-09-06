@@ -18,6 +18,7 @@ export function BagPage() {
   const house = mergeHouse(cat.data?.settings, houseBook.data);
   const items = useBag((s) => s.items);
   const setQty = useBag((s) => s.setQty);
+  const removeSlug = useBag((s) => s.removeSlug);
   const total = items.reduce((n, i) => n + i.price_cents * i.qty, 0);
   const [copied, setCopied] = useState(false);
 
@@ -73,6 +74,13 @@ export function BagPage() {
                       <span>{item.qty}</span>
                       <button type="button" onClick={() => setQty(item.id, item.qty + 1)}>
                         +
+                      </button>
+                      <button
+                        type="button"
+                        className="ml-4 text-[10px] uppercase tracking-[0.16em] text-mute"
+                        onClick={() => removeSlug(item.slug)}
+                      >
+                        Remove
                       </button>
                     </div>
                   </div>

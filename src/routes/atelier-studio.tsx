@@ -20,7 +20,7 @@ import {
   useHouseUser,
 } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
-import { compressVideoFile, parseGallery } from "@/lib/media";
+import { compressVideoFile } from "@/lib/media";
 import { uploadFilm, uploadStill } from "@/lib/client/upload-media";
 import { clearHangDraft, readHangDraft, writeHangDraft } from "@/lib/hang-draft";
 import { downloadLookFiles, downloadStill } from "@/lib/download-look";
@@ -28,7 +28,6 @@ import { Phone } from "lucide-react";
 import { GoogleMark, InstagramMark, TikTokMark, WhatsAppMark } from "@/components/brand-marks";
 import { BananaMark, MinionPeek } from "@/components/minion";
 import {
-  deletePiece,
   getPublicCatalog,
   openStudioForHouse,
   savePiece,
@@ -175,34 +174,7 @@ function Dashboard({ email }: { email: string }) {
     });
   }, []);
 
-  const rack = useMemo(() => {
-    const remote = firestore.data ?? [];
-    const slugs = new Set(remote.map((row) => row.slug));
-    const local = (catalog.data?.pieces ?? [])
-      .filter((piece) => !slugs.has(piece.slug))
-      .map(
-        (piece): Look => ({
-          id: `local-${piece.id}`,
-          slug: piece.slug,
-          title: piece.title,
-          subtitle: piece.subtitle,
-          description: piece.description,
-          caption: piece.caption,
-          price_cents: piece.price_cents,
-          currency: piece.currency || "UGX",
-          category: piece.category,
-          cover_url: piece.cover_url,
-          gallery: parseGallery(piece.gallery).map((item) =>
-            typeof item === "string" ? item : item.display || item.thumb,
-          ),
-          video_url: piece.video_url,
-          sold_out: piece.sold_out,
-          hidden: false,
-          created_at: piece.created_at,
-        }),
-      );
-    return [...remote, ...local];
-  }, [firestore.data, catalog.data?.pieces]);
+  const rack = useMemo(() => firestore.data ?? [], [firestore.data]);
 
   function startEdit(look: Look) {
     setEditing(look);
@@ -378,18 +350,13 @@ function Rack({
                   type="button"
                   className="border border-line px-3 py-2"
                   onClick={async () => {
-                    if (look.id.startsWith("local-")) {
-                      await setSoldOut({
-                        data: {
-                          token,
-                          id: Number(look.id.replace("local-", "")),
-                          sold_out: !look.sold_out,
-                        },
-                      });
-                    } else {
+                    try {
+                      if (look.id.startsWith("local-")) return;
                       await setLookSoldOut(look.id, !look.sold_out);
+                      onRefresh();
+                    } catch (err) {
+                      window.alert(err instanceof Error ? err.message : "Could not update.");
                     }
-                    onRefresh();
                   }}
                 >
                   {look.sold_out ? "Back on rack" : "Sold out"}
@@ -425,12 +392,10 @@ function Rack({
                     if (!window.confirm("Delete this look from the live house?")) return;
                     try {
                       if (look.id.startsWith("local-")) {
-                        await deletePiece({
-                          data: { token, id: Number(look.id.replace("local-", "")) },
-                        });
-                      } else {
-                        await removeLook(look.id);
+                        onRefresh();
+                        return;
                       }
+                      await removeLook(look.id);
                       onRefresh();
                     } catch (err) {
                       window.alert(err instanceof Error ? err.message : "Could not delete.");

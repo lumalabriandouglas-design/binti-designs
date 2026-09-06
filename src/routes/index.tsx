@@ -19,17 +19,8 @@ function Home() {
   const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
   const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
   const house = mergeHouse(data.settings, notes.data);
-  const pieces = firestore.data ?? [];
-  const heroSlides = pieces.length
-    ? pieces
-    : [
-        {
-          slug: "house",
-          title: "BINTI DESIGNS",
-          subtitle: "Kampala",
-          cover_url: "/looks/wrap-set.jpg",
-        },
-      ];
+  const pieces = firestore.isFetched ? (firestore.data ?? []) : [];
+  const heroSlides = pieces;
 
   return (
     <SiteShell settings={data.settings} overlay>

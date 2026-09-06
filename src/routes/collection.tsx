@@ -23,7 +23,7 @@ const FRAMES = [
 function Collection() {
   const data = Route.useLoaderData();
   const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
-  const pieces = firestore.data ?? [];
+  const pieces = firestore.isFetched ? (firestore.data ?? []) : [];
 
   return (
     <SiteShell settings={data.settings}>

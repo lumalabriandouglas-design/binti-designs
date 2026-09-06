@@ -16,35 +16,6 @@ export function useMemoryDb() {
 
 const now = () => new Date().toISOString();
 
-function look(
-  id: number,
-  slug: string,
-  subtitle: string,
-  description: string,
-  price: number,
-  caption: string,
-): Piece {
-  return {
-    id,
-    slug,
-    title: "The Wrap Set",
-    subtitle,
-    description,
-    price_cents: price,
-    currency: "UGX",
-    category: "Set",
-    cover_url: "/looks/wrap-set.jpg",
-    gallery: "[]",
-    video_url: "",
-    caption,
-    status: "published",
-    publish_to_drape: false,
-    drape_status: "idle",
-    sold_out: false,
-    created_at: now(),
-  };
-}
-
 type Memory = {
   pin: string;
   pin_changed: boolean;
@@ -81,38 +52,13 @@ function seed(): Memory {
       pin_changed: false,
       admin_email: "bintidesigns442@gmail.com",
     },
-    pieces: [
-      look(
-        1,
-        "wrap-set-midnight",
-        "Midnight",
-        "One-shoulder wrap top with a falling sash, cut against a close capri. Made to travel from daylight into evening without changing its mind.",
-        18500,
-        "Midnight wrap. Gold at the ear. Quiet power.",
-      ),
-      look(
-        2,
-        "wrap-set-pewter",
-        "Pewter",
-        "The same architecture in a cooler metal. Light gathers on the sash and leaves the rest of the body clean.",
-        18500,
-        "Pewter in late sun. The sash does the talking.",
-      ),
-      look(
-        3,
-        "wrap-set-crimson",
-        "Crimson",
-        "A saturated red that holds its depth indoors. Wear it with a small bag and nothing else that argues.",
-        19500,
-        "Crimson wrap. The room rearranges itself.",
-      ),
-    ],
+    pieces: [],
     journal: [],
     orders: [],
     callbacks: [],
     tokens: new Set(),
     wishlists: new Map(),
-    nextPiece: 4,
+    nextPiece: 1,
     nextJournal: 1,
     nextOrder: 1,
     nextCallback: 1,

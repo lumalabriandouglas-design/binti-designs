@@ -220,7 +220,7 @@ function PieceView({ piece }: { piece: Piece }) {
           </HouseSignedOut>
         </div>
         {note ? <p className="mt-4 text-sm text-mute">{note}</p> : null}
-        <PieceContact />
+        <PieceContact piece={piece} />
         <div className="mt-14 border-t border-line pt-10">
           <CallbackForm pieceSlug={piece.slug} />
         </div>
@@ -229,12 +229,19 @@ function PieceView({ piece }: { piece: Piece }) {
   );
 }
 
-function PieceContact() {
+function PieceContact({
+  piece,
+}: {
+  piece: { title: string; subtitle: string; slug: string };
+}) {
   const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
   const cat = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
   return (
     <div className="mt-10">
-      <HouseContact house={mergeHouse(cat.data?.settings, notes.data)} />
+      <HouseContact
+        house={mergeHouse(cat.data?.settings, notes.data)}
+        piece={{ title: piece.title, subtitle: piece.subtitle, slug: piece.slug }}
+      />
     </div>
   );
 }

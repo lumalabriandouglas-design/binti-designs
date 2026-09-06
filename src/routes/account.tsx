@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SiteShell } from "@/components/site-shell";
 import { getPublicCatalog } from "@/lib/server/boutique";
 import { formatMoney } from "@/lib/utils";
-import { HouseSignedIn, HouseSignedOut, houseSignOut, useHouseUser } from "@/lib/firebase/session";
+import { HouseSignedIn, HouseSignedOut, useHouseUser } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
 import { useBag } from "@/lib/bag";
 import { dropSavedLook, loadSavedLooks, type SavedLook } from "@/lib/client-closet";
@@ -40,15 +40,6 @@ function Account() {
         <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-gold">Client</p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
           <h1 className="display text-4xl sm:text-6xl">Your floor</h1>
-          <HouseSignedIn>
-            <button
-              type="button"
-              className="text-[0.7rem] tracking-[0.2em] uppercase text-mute"
-              onClick={() => void houseSignOut()}
-            >
-              Sign out
-            </button>
-          </HouseSignedIn>
         </div>
 
         <HouseSignedOut>

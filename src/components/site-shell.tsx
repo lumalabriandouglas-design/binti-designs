@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ShoppingBag } from "lucide-react";
-import { useHouseUser } from "@/lib/firebase/session";
+import { houseSignOut, useHouseUser } from "@/lib/firebase/session";
 import { isHouseAccount } from "@/lib/house";
 import { useBag } from "@/lib/bag";
 import type { Settings } from "@/lib/server/boutique";
@@ -68,15 +68,11 @@ export function SiteShell({
           </nav>
           <div className={`flex items-center justify-end gap-5 ${ink}`}>
             {user ? (
-              <Link
-                to={houseAccount ? "/atelier-studio" : "/account"}
-                aria-label={houseAccount ? "Studio" : "Your floor"}
-                className={`grid size-8 place-items-center rounded-full border text-[0.7rem] tracking-[0.08em] ${
-                  float ? "border-[#f6f1ea]/50" : "border-line"
-                }`}
-              >
-                {(user.primaryEmail || user.displayName || "B").trim().charAt(0).toUpperCase()}
-              </Link>
+              <AccountMark
+                letter={(user.primaryEmail || user.displayName || "B").trim().charAt(0).toUpperCase()}
+                house={houseAccount}
+                float={float}
+              />
             ) : (
               <Link to="/login" className={`hidden nav-mark sm:inline-flex ${mute}`}>
                 Sign in
@@ -149,6 +145,64 @@ export function SiteShell({
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function AccountMark({
+  letter,
+  house,
+  float,
+}: {
+  letter: string;
+  house: boolean;
+  float: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDoc(event: MouseEvent) {
+      if (!box.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  return (
+    <div ref={box} className="relative">
+      <button
+        type="button"
+        aria-label="Account"
+        aria-expanded={open}
+        className={`grid size-8 place-items-center rounded-full border text-[0.7rem] tracking-[0.08em] ${
+          float ? "border-[#f6f1ea]/50" : "border-line"
+        }`}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {letter}
+      </button>
+      {open ? (
+        <div className="absolute right-0 top-11 z-50 min-w-44 border border-line bg-paper py-2 text-ink shadow-sm">
+          <Link
+            to={house ? "/atelier-studio" : "/account"}
+            className="block px-4 py-2 text-[11px] uppercase tracking-[0.16em]"
+            onClick={() => setOpen(false)}
+          >
+            {house ? "Studio" : "Your floor"}
+          </Link>
+          <button
+            type="button"
+            className="block w-full px-4 py-2 text-left text-[11px] uppercase tracking-[0.16em] text-mute"
+            onClick={() => {
+              setOpen(false);
+              void houseSignOut();
+            }}
+          >
+            Sign out
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

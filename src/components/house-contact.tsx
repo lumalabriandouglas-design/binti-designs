@@ -35,13 +35,37 @@ export function mergeHouse(
   };
 }
 
+export type PieceHint = { title: string; subtitle?: string; slug?: string };
+
+export function pieceMessage(piece?: PieceHint) {
+  if (!piece?.title) return "Hello BINTI DESIGNS —";
+  const name = [piece.title, piece.subtitle].filter(Boolean).join(" ");
+  const url = piece.slug ? ` https://binti-designs.vercel.app/piece/${piece.slug}` : "";
+  return `Hello BINTI DESIGNS — I am writing about ${name}.${url}`;
+}
+
+function instagramHandle(url: string) {
+  const match = url.match(/instagram\.com\/([^/?#]+)/i) || url.match(/^@?([a-z0-9._]+)$/i);
+  return match?.[1] || "";
+}
+
 export function HouseContact({
   house,
+  piece,
 }: {
   house: ReturnType<typeof mergeHouse>;
+  piece?: PieceHint;
 }) {
   const [copied, setCopied] = useState(false);
+  const [igNote, setIgNote] = useState("");
   if (!house.whatsapp && !house.phone && !house.payment && !house.instagram) return null;
+
+  const opener = pieceMessage(piece);
+  const waHref = house.waLink
+    ? `${house.waLink}?text=${encodeURIComponent(opener)}`
+    : "";
+  const handle = instagramHandle(house.instagram);
+  const igHref = handle ? `https://ig.me/m/${handle}` : house.instagram;
 
   async function copyPay() {
     if (!house.payment) return;
@@ -54,10 +78,19 @@ export function HouseContact({
     window.setTimeout(() => setCopied(false), 2000);
   }
 
+  async function openInstagram() {
+    try {
+      await navigator.clipboard.writeText(opener);
+      setIgNote("Opening line copied. Paste it in the chat.");
+    } catch {
+      setIgNote("");
+    }
+  }
+
   return (
     <div className="space-y-3 text-sm">
-      {house.waLink ? (
-        <a href={house.waLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-ink">
+      {waHref ? (
+        <a href={waHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-ink">
           <WhatsAppMark className="h-4 w-4 text-[#25D366]" />
           {house.whatsapp}
         </a>
@@ -74,12 +107,19 @@ export function HouseContact({
           {copied ? "Copied" : house.payment}
         </button>
       ) : null}
-      {house.instagram ? (
-        <a href={house.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-ink">
+      {igHref ? (
+        <a
+          href={igHref}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-2 text-ink"
+          onClick={() => void openInstagram()}
+        >
           <InstagramMark className="h-4 w-4" />
           Instagram
         </a>
       ) : null}
+      {igNote ? <p className="text-xs text-mute">{igNote}</p> : null}
       {house.tiktok ? (
         <a href={house.tiktok} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-ink">
           <TikTokMark className="h-4 w-4" />

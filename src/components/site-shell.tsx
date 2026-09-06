@@ -67,12 +67,17 @@ export function SiteShell({
             ))}
           </nav>
           <div className={`flex items-center justify-end gap-5 ${ink}`}>
-            {user && !houseAccount ? (
-              <Link to="/account" className={`nav-mark ${ink}`}>
-                Account
+            {user ? (
+              <Link
+                to={houseAccount ? "/atelier-studio" : "/account"}
+                aria-label={houseAccount ? "Studio" : "Your floor"}
+                className={`grid size-8 place-items-center rounded-full border text-[0.7rem] tracking-[0.08em] ${
+                  float ? "border-[#f6f1ea]/50" : "border-line"
+                }`}
+              >
+                {(user.primaryEmail || user.displayName || "B").trim().charAt(0).toUpperCase()}
               </Link>
-            ) : null}
-            {user ? null : (
+            ) : (
               <Link to="/login" className={`hidden nav-mark sm:inline-flex ${mute}`}>
                 Sign in
               </Link>

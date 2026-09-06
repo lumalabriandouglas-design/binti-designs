@@ -35,6 +35,11 @@ service cloud.firestore {
       allow read: if isHouse();
     }
 
+    match /films/{filmId} {
+      allow read: if true;
+      allow create, update, delete: if isHouse();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

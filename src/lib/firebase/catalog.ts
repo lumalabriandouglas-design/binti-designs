@@ -280,3 +280,71 @@ export async function saveHouseNotes(notes: HouseNotes) {
   await setDoc(doc(db, "house", "notes"), notes, { merge: true });
 }
 
+export type HouseFilm = {
+  id: string;
+  title: string;
+  caption: string;
+  video_url: string;
+  cover_url: string;
+  pieceSlug: string;
+  created_at: string;
+};
+
+function asFilm(id: string, data: DocumentData): HouseFilm {
+  return {
+    id,
+    title: String(data.title ?? "Film"),
+    caption: String(data.caption ?? ""),
+    video_url: asMediaUrl(data.video_url) || String(data.video_url ?? ""),
+    cover_url: asMediaUrl(data.cover_url) || String(data.cover_url ?? ""),
+    pieceSlug: String(data.pieceSlug ?? ""),
+    created_at: String(data.created_at ?? ""),
+  };
+}
+
+export async function listFilms(): Promise<HouseFilm[]> {
+  const db = getFirebaseDb();
+  if (!db) return [];
+  const snap = await getDocs(collection(db, "films"));
+  const rows = snap.docs
+    .map((row) => asFilm(row.id, row.data()))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const refs = rows.flatMap((row) => [row.video_url, row.cover_url].filter((url) => url.startsWith("r2:")));
+  if (!refs.length) return rows;
+  try {
+    const map = await resolveMediaBatch({ data: { refs: [...new Set(refs)] } });
+    return rows.map((row) => ({
+      ...row,
+      video_url: map[row.video_url] || row.video_url,
+      cover_url: map[row.cover_url] || row.cover_url,
+    }));
+  } catch {
+    return rows;
+  }
+}
+
+export async function saveFilm(film: Omit<HouseFilm, "id" | "created_at"> & { id?: string }) {
+  const db = getFirebaseDb();
+  if (!db) throw new Error("The house book is not connected.");
+  const body = {
+    title: film.title,
+    caption: film.caption,
+    video_url: film.video_url,
+    cover_url: film.cover_url,
+    pieceSlug: film.pieceSlug,
+    created_at: new Date().toISOString(),
+  };
+  if (film.id) {
+    await setDoc(doc(db, "films", film.id), body, { merge: true });
+    return film.id;
+  }
+  const row = await addDoc(collection(db, "films"), body);
+  return row.id;
+}
+
+export async function removeFilm(id: string) {
+  const db = getFirebaseDb();
+  if (!db) throw new Error("The house book is not connected.");
+  await deleteDoc(doc(db, "films", id));
+}
+

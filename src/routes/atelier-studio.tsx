@@ -5,12 +5,16 @@ import {
   getHouseNotes,
   listInquiries,
   listLooks,
+  listFilms,
+  removeFilm,
   removeLook,
+  saveFilm,
   saveHouseNotes,
   saveLook,
   setLookSoldOut,
   setLookHidden,
   type Look,
+  type HouseFilm,
 } from "@/lib/firebase/catalog";
 import { HOUSE_EMAIL } from "@/lib/firebase/firebase";
 import {
@@ -40,7 +44,7 @@ import { setStudioToken } from "@/lib/bag";
 
 export const Route = createFileRoute("/atelier-studio")({ component: AtelierStudio });
 
-type Tab = "rack" | "table" | "house" | "requests";
+type Tab = "rack" | "table" | "film" | "house" | "requests";
 
 function AtelierStudio() {
   const { user, isPending } = useHouseUser();
@@ -163,6 +167,7 @@ function Dashboard({ email }: { email: string }) {
   const catalog = useQuery({ queryKey: ["catalog"], queryFn: () => getPublicCatalog() });
   const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
   const firestore = useQuery({ queryKey: ["looks"], queryFn: listLooks });
+  const films = useQuery({ queryKey: ["films"], queryFn: listFilms });
   const inquiries = useQuery({ queryKey: ["inquiries"], queryFn: listInquiries });
 
   useEffect(() => {
@@ -184,6 +189,7 @@ function Dashboard({ email }: { email: string }) {
   const rooms = [
     { id: "rack" as Tab, label: "Collection", hint: "The rack" },
     { id: "table" as Tab, label: "Hang", hint: "New look" },
+    { id: "film" as Tab, label: "Film", hint: "Independent reels" },
     { id: "requests" as Tab, label: "Desk", hint: "Clients" },
     { id: "house" as Tab, label: "House", hint: "Numbers & socials" },
   ];
@@ -276,6 +282,14 @@ function Dashboard({ email }: { email: string }) {
               void firestore.refetch();
               void catalog.refetch();
             }}
+          />
+        ) : null}
+        {tab === "film" ? (
+          <FilmDesk
+            token={token}
+            looks={rack}
+            films={films.data ?? []}
+            onRefresh={() => void films.refetch()}
           />
         ) : null}
         {tab === "house" ? (
@@ -1069,4 +1083,175 @@ function blobToDataUrl(blob: Blob) {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
+}
+
+function FilmDesk({
+  token,
+  looks,
+  films,
+  onRefresh,
+}: {
+  token: string;
+  looks: Look[];
+  films: HouseFilm[];
+  onRefresh: () => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [caption, setCaption] = useState("");
+  const [video, setVideo] = useState("");
+  const [cover, setCover] = useState("");
+  const [pieceSlug, setPieceSlug] = useState("");
+  const [busy, setBusy] = useState("");
+  const [err, setErr] = useState("");
+
+  const save = useMutation({
+    mutationFn: () =>
+      saveFilm({
+        title: title.trim() || "Film",
+        caption,
+        video_url: video,
+        cover_url: cover,
+        pieceSlug,
+      }),
+    onSuccess: () => {
+      setTitle("");
+      setCaption("");
+      setVideo("");
+      setCover("");
+      setPieceSlug("");
+      onRefresh();
+    },
+    onError: (error) => setErr(error instanceof Error ? error.message : "Could not hang the film."),
+  });
+
+  return (
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!video) {
+            setErr("Add the film first.");
+            return;
+          }
+          save.mutate();
+        }}
+      >
+        <p className="eyebrow">Film</p>
+        <h1 className="display text-5xl">Independent reel</h1>
+        <p className="max-w-lg text-sm text-mute">
+          Hang a reel on its own. Link a look if you want The stills to open that piece.
+        </p>
+        <label className="block border border-dashed border-line px-4 py-10 text-center text-sm text-mute">
+          Film
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setErr("");
+              setBusy("Compressing film…");
+              try {
+                const compact = await compressVideoFile(file);
+                const named =
+                  compact instanceof File
+                    ? compact
+                    : new File([compact], file.name.replace(/\.[^.]+$/, ".webm"), {
+                        type: compact.type || "video/webm",
+                      });
+                setVideo(await uploadFilm(token, named));
+              } catch (error) {
+                setErr(error instanceof Error ? error.message : "Could not read the film.");
+              } finally {
+                setBusy("");
+              }
+            }}
+          />
+        </label>
+        {video ? <video src={video} controls playsInline className="w-full bg-ink" /> : null}
+        <label className="block border border-dashed border-line px-4 py-6 text-center text-sm text-mute">
+          Cover still — optional
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setBusy("Preparing cover…");
+              try {
+                const stored = await uploadStill(token, file);
+                setCover(stored.display);
+              } catch (error) {
+                setErr(error instanceof Error ? error.message : "Could not read the still.");
+              } finally {
+                setBusy("");
+              }
+            }}
+          />
+        </label>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
+          className="w-full border border-line bg-paper px-3 py-3 text-sm outline-none"
+        />
+        <textarea
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+          placeholder="Caption"
+          className="h-24 w-full border border-line bg-paper px-3 py-3 text-sm outline-none"
+        />
+        <select
+          value={pieceSlug}
+          onChange={(e) => setPieceSlug(e.target.value)}
+          className="w-full border border-line bg-paper px-3 py-3 text-sm outline-none"
+        >
+          <option value="">No look — film only</option>
+          {looks.map((look) => (
+            <option key={look.id} value={look.slug}>
+              Link to {look.title}
+            </option>
+          ))}
+        </select>
+        {busy ? <p className="text-sm text-mute">{busy}</p> : null}
+        {err ? <p className="text-sm text-mute">{err}</p> : null}
+        <button
+          type="submit"
+          disabled={save.isPending}
+          className="bg-ink px-6 py-3 text-xs tracking-[0.22em] uppercase text-paper disabled:opacity-40"
+        >
+          {save.isPending ? "Hanging…" : "Hang reel"}
+        </button>
+      </form>
+      <aside>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-mute">On the floor</p>
+        <ul className="mt-4 space-y-4">
+          {films.length === 0 ? (
+            <li className="text-sm text-mute">No independent reels yet.</li>
+          ) : (
+            films.map((film) => (
+              <li key={film.id} className="border border-line p-3">
+                <p className="text-sm">{film.title}</p>
+                <p className="text-xs text-mute">{film.pieceSlug || "Film only"}</p>
+                <button
+                  type="button"
+                  className="mt-2 text-[10px] uppercase tracking-[0.16em] text-mute"
+                  onClick={async () => {
+                    if (!window.confirm("Take this reel off the floor?")) return;
+                    await removeFilm(film.id);
+                    onRefresh();
+                  }}
+                >
+                  Remove
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      </aside>
+    </div>
+  );
 }

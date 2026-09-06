@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/september-14")({
@@ -8,15 +8,15 @@ export const Route = createFileRoute("/september-14")({
 const OPEN_AT = new Date("2026-09-14T00:00:00+03:00").getTime();
 
 const NOTES = [
-  { day: "2026-09-06", line: "A house is being cut for you. Not yet. Soon." },
-  { day: "2026-09-07", line: "The cloth is still on the table. Patience is part of the gift." },
-  { day: "2026-09-08", line: "Kampala light. Your name on the door. Eight days, then six." },
-  { day: "2026-09-09", line: "You make rooms look finished. This one is still gathering." },
-  { day: "2026-09-10", line: "Four days. The drapes stay shut on purpose." },
-  { day: "2026-09-11", line: "Almost. Do not peek. The cut is better closed." },
-  { day: "2026-09-12", line: "Two nights. Wear something you like. The house will wait." },
-  { day: "2026-09-13", line: "Tomorrow the floor opens. Sleep well, Natasha." },
-  { day: "2026-09-14", line: "Happy birthday. The house is yours." },
+  { day: "2026-09-06", line: "Not yet. Keep the fourteenth free." },
+  { day: "2026-09-07", line: "Something is waiting. That is all." },
+  { day: "2026-09-08", line: "Do not ask what it is. Asking spoils the cut." },
+  { day: "2026-09-09", line: "Five nights. Wear whatever you like." },
+  { day: "2026-09-10", line: "Still closed. On purpose." },
+  { day: "2026-09-11", line: "Almost. No peeking." },
+  { day: "2026-09-12", line: "Two nights." },
+  { day: "2026-09-13", line: "Tomorrow. Sleep well." },
+  { day: "2026-09-14", line: "Now." },
 ];
 
 function eatStamp(date = new Date()) {
@@ -67,28 +67,21 @@ function BirthdaySeal() {
       <div className="drape drape-right" aria-hidden />
       <main className="relative z-20 mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-6 py-20 text-center">
         <p className="text-[10px] font-medium uppercase tracking-[0.34em] text-gold">
-          For Natasha
+          14 September
         </p>
         {open ? (
           <>
             <h1 className="display mt-6 text-5xl sm:text-7xl">Happy birthday.</h1>
             <p className="mt-6 max-w-md text-sm leading-relaxed text-[#f6f1ea]/70">
-              The drapes may open. The house is cut for you — looks, numbers,
-              the floor. Walk it when you are ready.
+              That is all this page will say. The rest is better in a room,
+              not on a screen.
             </p>
-            <Link
-              to="/"
-              className="mt-10 border border-gold bg-gold px-8 py-3 text-[11px] tracking-[0.22em] uppercase text-[#14110e]"
-            >
-              Enter the house
-            </Link>
           </>
         ) : (
           <>
-            <h1 className="display mt-6 text-4xl sm:text-6xl">Not yet.</h1>
+            <h1 className="display mt-6 text-4xl sm:text-6xl">Sealed.</h1>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-[#f6f1ea]/65">
-              A sealed note for the fourteenth. The drapes stay shut until
-              midnight in Kampala.
+              Midnight in Kampala. Nothing inside until then.
             </p>
             <div className="mt-12 grid w-full grid-cols-4 gap-2 text-[#f6f1ea]">
               {[
@@ -111,7 +104,7 @@ function BirthdaySeal() {
               </p>
             ) : null}
             <p className="mt-8 text-[10px] uppercase tracking-[0.2em] text-[#f6f1ea]/35">
-              One line a day. The house waits.
+              One line a day. That is all.
             </p>
           </>
         )}

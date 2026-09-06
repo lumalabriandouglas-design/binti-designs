@@ -92,7 +92,7 @@ function Account() {
             </section>
             <section className="border border-line p-6 sm:p-8">
               <p className="text-[10px] uppercase tracking-[0.2em] text-mute">House</p>
-              <h2 className="display mt-2 text-3xl">Notes</h2>
+              <h2 className="display mt-2 text-3xl">Your looks</h2>
               <p className="mt-4 text-sm leading-relaxed text-mute">
                 Your bag is saved to this account. Close the tab, go offline, come
                 back — the looks stay. Reserve from the bag with WhatsApp or a call.

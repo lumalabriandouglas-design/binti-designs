@@ -395,7 +395,7 @@ function JournalForm({ token }: { token: string }) {
         type="submit"
         className="border border-[#f0d24b] px-6 py-3 text-[0.7rem] tracking-[0.2em] uppercase text-[#f0d24b]"
       >
-        Save to journal
+        Hang this look
       </button>
     </form>
   );

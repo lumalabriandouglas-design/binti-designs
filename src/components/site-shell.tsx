@@ -74,7 +74,7 @@ export function SiteShell({
             ) : null}
             {user ? null : (
               <Link to="/login" className={`hidden nav-mark sm:inline-flex ${mute}`}>
-                Enter
+                Sign in
               </Link>
             )}
             <Link to="/bag" aria-label="Cart" className={`relative ${ink}`}>
@@ -105,9 +105,6 @@ export function SiteShell({
           <p className="text-3xl sm:text-4xl md:text-5xl">BINTI DESIGNS</p>
           <p className="text-sm leading-relaxed text-mute">{house.tagline}</p>
           <div className="text-sm leading-7 text-mute">
-            <Link to="/journal" className="text-ink">
-              Notes
-            </Link>
             {house.instagram ? (
               <a
                 href={house.instagram}

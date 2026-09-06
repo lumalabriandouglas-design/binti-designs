@@ -23,10 +23,7 @@ const FRAMES = [
 function Collection() {
   const data = Route.useLoaderData();
   const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
-  const pieces =
-    firestore.data && firestore.data.length
-      ? firestore.data
-      : (data.pieces ?? []);
+  const pieces = firestore.data ?? [];
 
   return (
     <SiteShell settings={data.settings}>
@@ -37,7 +34,7 @@ function Collection() {
           Looks as worn. Space left around the garment so the cut can speak.
         </p>
         <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-16 sm:mt-24 md:grid-cols-12 md:gap-y-8">
-          {pieces.map((piece, index) => (
+          {pieces.length ? pieces.map((piece, index) => (
             <motion.div
               key={piece.slug + index}
               initial={{ opacity: 0, y: 20 }}
@@ -69,7 +66,11 @@ function Collection() {
                 </div>
               </Link>
             </motion.div>
-          ))}
+          )) : (
+            <p className="col-span-full max-w-md text-sm leading-relaxed text-mute">
+              Nothing on the floor yet. When Natasha hangs a look, it will live here.
+            </p>
+          )}
         </div>
       </section>
     </SiteShell>

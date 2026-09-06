@@ -68,6 +68,7 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
               : ""}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
+          {current.slug !== "house" ? (
           <Link
             to="/piece/$slug"
             params={{ slug: current.slug }}
@@ -75,6 +76,7 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
           >
             The piece
           </Link>
+          ) : null}
           <Link
             to="/collection"
             className="border border-[#f6f1ea]/50 px-6 py-3 text-[11px] tracking-[0.22em] uppercase text-[#f6f1ea]"

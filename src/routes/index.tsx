@@ -5,8 +5,9 @@ import { DrapeReveal } from "@/components/drape-reveal";
 import { SiteShell } from "@/components/site-shell";
 import { HeroSlider } from "@/components/hero-slider";
 import { CallbackForm } from "@/components/callback-form";
+import { HouseContact, mergeHouse } from "@/components/house-contact";
 import { getPublicCatalog } from "@/lib/server/boutique";
-import { listPublicLooks } from "@/lib/firebase/catalog";
+import { getHouseNotes, listPublicLooks } from "@/lib/firebase/catalog";
 
 export const Route = createFileRoute("/")({
   loader: () => getPublicCatalog(),
@@ -16,23 +17,24 @@ export const Route = createFileRoute("/")({
 function Home() {
   const data = Route.useLoaderData();
   const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
-  const pieces =
-    firestore.data && firestore.data.length
-      ? firestore.data
-      : (data.pieces ?? []).map((p) => ({
-          slug: p.slug,
-          title: p.title,
-          subtitle: p.subtitle,
-          cover_url: p.cover_url,
-          price_cents: p.price_cents,
-          currency: p.currency || "UGX",
-          sold_out: p.sold_out,
-        }));
+  const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
+  const house = mergeHouse(data.settings, notes.data);
+  const pieces = firestore.data ?? [];
+  const heroSlides = pieces.length
+    ? pieces
+    : [
+        {
+          slug: "house",
+          title: "BINTI DESIGNS",
+          subtitle: "Kampala",
+          cover_url: "/looks/wrap-set.jpg",
+        },
+      ];
 
   return (
     <SiteShell settings={data.settings} overlay>
       <DrapeReveal house="BINTI DESIGNS">
-      <HeroSlider pieces={pieces} />
+      <HeroSlider pieces={heroSlides} />
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24 md:px-10 md:py-28">
         <div className="mb-12 flex items-end justify-between gap-6 sm:mb-20">
           <h2 className="text-3xl sm:text-5xl md:text-7xl">Now on the rack</h2>
@@ -40,6 +42,7 @@ function Home() {
             All looks
           </Link>
         </div>
+        {pieces.length ? (
         <div className="space-y-20">
           {pieces.slice(0, 4).map((piece, index) => (
             <motion.div
@@ -67,13 +70,21 @@ function Home() {
             </motion.div>
           ))}
         </div>
+        ) : (
+          <p className="max-w-md text-sm leading-relaxed text-mute">
+            The rack is being dressed. WhatsApp the house if you want a look before it hangs.
+          </p>
+        )}
       </section>
       <section className="border-t border-line">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-24 md:grid-cols-2 md:gap-20 md:px-10 md:py-28">
           <div>
             <p className="eyebrow">House</p>
             <h2 className="mt-6 text-3xl sm:text-5xl md:text-7xl">A private floor in Kampala.</h2>
-            <p className="mt-8 max-w-md text-sm leading-relaxed text-mute">{data.settings?.about}</p>
+            <p className="mt-8 max-w-md text-sm leading-relaxed text-mute">{house.about || data.settings?.about}</p>
+            <div className="mt-8">
+              <HouseContact house={house} />
+            </div>
           </div>
           <CallbackForm />
         </div>

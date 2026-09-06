@@ -23,6 +23,7 @@ import { isHouseAccount } from "@/lib/house";
 import { compressVideoFile, parseGallery } from "@/lib/media";
 import { uploadFilm, uploadStill } from "@/lib/client/upload-media";
 import { clearHangDraft, readHangDraft, writeHangDraft } from "@/lib/hang-draft";
+import { downloadLookFiles, downloadStill } from "@/lib/download-look";
 import { Phone } from "lucide-react";
 import { GoogleMark, InstagramMark, TikTokMark, WhatsAppMark } from "@/components/brand-marks";
 import { BananaMark, MinionPeek } from "@/components/minion";
@@ -406,20 +407,37 @@ function Rack({
                 </button>
                 <button
                   type="button"
-                  className="border border-line px-3 py-2 text-mute"
+                  className="border border-line px-3 py-2"
                   onClick={async () => {
-                    if (!window.confirm("Remove this look from the house?")) return;
-                    if (look.id.startsWith("local-")) {
-                      await deletePiece({
-                        data: { token, id: Number(look.id.replace("local-", "")) },
-                      });
-                    } else {
-                      await removeLook(look.id);
+                    try {
+                      await downloadLookFiles(look);
+                    } catch (err) {
+                      window.alert(err instanceof Error ? err.message : "Could not download.");
                     }
-                    onRefresh();
                   }}
                 >
-                  Remove
+                  Download
+                </button>
+                <button
+                  type="button"
+                  className="border border-line px-3 py-2 text-[#8a2b2b]"
+                  onClick={async () => {
+                    if (!window.confirm("Delete this look from the live house?")) return;
+                    try {
+                      if (look.id.startsWith("local-")) {
+                        await deletePiece({
+                          data: { token, id: Number(look.id.replace("local-", "")) },
+                        });
+                      } else {
+                        await removeLook(look.id);
+                      }
+                      onRefresh();
+                    } catch (err) {
+                      window.alert(err instanceof Error ? err.message : "Could not delete.");
+                    }
+                  }}
+                >
+                  Delete
                 </button>
               </div>
             </div>
@@ -701,14 +719,21 @@ function LookForm({
                   ) : null}
                   <button
                     type="button"
-                    className="absolute right-2 top-2 text-[11px] text-mute"
+                    className="absolute right-2 top-2 bg-[#faf7f2]/90 px-1.5 text-[10px] uppercase tracking-[0.12em] text-mute"
                     onClick={() => {
                       const next = gallery.filter((_, i) => i !== index);
                       setGallery(next);
                       if (cover === url) setCover(next[0] ?? "");
                     }}
                   >
-                    Remove
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    className="absolute bottom-2 right-2 bg-[#faf7f2]/90 px-1.5 text-[10px] uppercase tracking-[0.12em] text-mute"
+                    onClick={() => void downloadStill(url, `look-${index + 1}`)}
+                  >
+                    Save
                   </button>
                 </div>
               ))}

@@ -63,23 +63,21 @@ function asLook(id: string, data: DocumentData): Look {
   };
 }
 
-export async function listLooks(): Promise<Look[]> {
-  const db = getFirebaseDb();
-  if (!db) return [];
-  const snap = await getDocs(collection(db, "pieces"));
-  const looks = snap.docs
-    .map((row) => asLook(row.id, row.data()))
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
-  const refs = looks.flatMap((look) =>
-    [look.cover_url, look.video_url, ...look.gallery].filter((url) => url.startsWith("r2:")),
-  );
+async function resolveRefs(looks: Look[], keys: Array<"cover" | "gallery" | "video">) {
+  const refs = looks.flatMap((look) => {
+    const urls: string[] = [];
+    if (keys.includes("cover")) urls.push(look.cover_url);
+    if (keys.includes("video")) urls.push(look.video_url);
+    if (keys.includes("gallery")) urls.push(...look.gallery);
+    return urls.filter((url) => url.startsWith("r2:"));
+  });
   if (!refs.length) return looks;
   try {
     const map = await resolveMediaBatch({ data: { refs: [...new Set(refs)] } });
     return looks.map((look) => ({
       ...look,
       cover_url: map[look.cover_url] || look.cover_url,
-      video_url: look.video_url ? map[look.video_url] || look.video_url : "",
+      video_url: look.video_url ? map[look.video_url] || look.video_url : look.video_url,
       gallery: look.gallery.map((url) => map[url] || url),
     }));
   } catch {
@@ -87,8 +85,30 @@ export async function listLooks(): Promise<Look[]> {
   }
 }
 
+export async function listLooks(): Promise<Look[]> {
+  const db = getFirebaseDb();
+  if (!db) return [];
+  const snap = await getDocs(collection(db, "pieces"));
+  const looks = snap.docs
+    .map((row) => asLook(row.id, row.data()))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return resolveRefs(looks, ["cover", "gallery", "video"]);
+}
+
 export async function listPublicLooks(): Promise<Look[]> {
-  return (await listLooks()).filter((look) => !look.hidden);
+  const db = getFirebaseDb();
+  if (!db) return [];
+  const snap = await getDocs(collection(db, "pieces"));
+  const looks = snap.docs
+    .map((row) => asLook(row.id, row.data()))
+    .filter((look) => !look.hidden)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return resolveRefs(looks, ["cover"]);
+}
+
+export async function hydrateLook(look: Look): Promise<Look> {
+  const [ready] = await resolveRefs([look], ["cover", "gallery", "video"]);
+  return ready ?? look;
 }
 
 export async function setLookHidden(id: string, hidden: boolean) {

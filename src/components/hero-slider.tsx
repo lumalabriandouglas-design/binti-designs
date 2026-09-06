@@ -13,9 +13,62 @@ export type Slide = {
   sold_out?: boolean;
 };
 
+const CACHE_KEY = "binti-hero-slides";
+
+function readCache(): Slide[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    const rows = raw ? (JSON.parse(raw) as Slide[]) : [];
+    return Array.isArray(rows) ? rows.filter((row) => row?.cover_url) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeCache(slides: Slide[]) {
+  if (typeof window === "undefined" || !slides.length) return;
+  try {
+    sessionStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify(
+        slides.slice(0, 8).map((slide) => ({
+          slug: slide.slug,
+          title: slide.title,
+          subtitle: slide.subtitle,
+          cover_url: slide.cover_url,
+          price_cents: slide.price_cents,
+          currency: slide.currency,
+          sold_out: slide.sold_out,
+        })),
+      ),
+    );
+  } catch {
+    /* private mode */
+  }
+}
+
 export function HeroSlider({ pieces }: { pieces: Slide[] }) {
-  const slides = pieces.filter((p) => p.cover_url).slice(0, 8);
+  const [cached] = useState(readCache);
   const [index, setIndex] = useState(0);
+  const [ready, setReady] = useState<Record<string, boolean>>({});
+  const incoming = pieces.filter((p) => p.cover_url).slice(0, 8);
+  const slides = incoming.length ? incoming : cached;
+
+  useEffect(() => {
+    if (incoming.length) writeCache(incoming);
+  }, [incoming]);
+
+  useEffect(() => {
+    if (!slides[0]?.cover_url) return;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = slides[0].cover_url;
+    link.setAttribute("fetchpriority", "high");
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [slides[0]?.cover_url]);
 
   useEffect(() => {
     if (slides.length < 2) return;
@@ -34,19 +87,29 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
   }
 
   const current = slides[index] ?? slides[0];
+  const count = slides.length;
 
   return (
     <section className="relative min-h-dvh overflow-hidden bg-[#11100e]">
-      {slides.map((slide, i) => (
-        <img
-          key={slide.slug + slide.cover_url}
-          src={slide.cover_url}
-          alt={`${slide.title} ${slide.subtitle ?? ""}`}
-          className={`absolute inset-0 h-full w-full object-contain object-top transition-opacity duration-700 ${
-            i === index ? "opacity-100 hero-kenburns" : "opacity-0"
-          }`}
-        />
-      ))}
+      {slides.map((slide, i) => {
+        const active = i === index;
+        const nearby = active || i === (index + 1) % count || i === (index - 1 + count) % count;
+        if (!nearby && !ready[slide.cover_url]) return null;
+        return (
+          <img
+            key={slide.slug + slide.cover_url}
+            src={slide.cover_url}
+            alt={`${slide.title} ${slide.subtitle ?? ""}`}
+            decoding="async"
+            fetchPriority={i === 0 ? "high" : "low"}
+            loading={i === 0 ? "eager" : "lazy"}
+            onLoad={() => setReady((map) => ({ ...map, [slide.cover_url]: true }))}
+            className={`absolute inset-0 h-full w-full object-contain object-top transition-opacity duration-700 ${
+              active && ready[slide.cover_url] ? "opacity-100 hero-kenburns" : "opacity-0"
+            }`}
+          />
+        );
+      })}
       <div className="absolute inset-0 bg-gradient-to-t from-[#11100e] via-[#11100e]/35 to-[#11100e]/20" />
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-7xl flex-col justify-end px-6 pb-16 pt-28 md:px-10">
         <p className="rise-in text-[11px] font-medium uppercase tracking-[0.32em] text-gold">

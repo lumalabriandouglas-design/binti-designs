@@ -103,7 +103,7 @@ export async function listPublicLooks(): Promise<Look[]> {
     .map((row) => asLook(row.id, row.data()))
     .filter((look) => !look.hidden)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
-  return resolveRefs(looks, ["cover"]);
+  return resolveRefs(looks.slice(0, 24), ["cover", "gallery"]);
 }
 
 export async function listPublicReels(): Promise<Look[]> {

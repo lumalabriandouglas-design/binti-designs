@@ -6,6 +6,7 @@ import { SiteShell } from "@/components/site-shell";
 import { HeroSlider } from "@/components/hero-slider";
 import { CallbackForm } from "@/components/callback-form";
 import { HouseContact, mergeHouse } from "@/components/house-contact";
+import { LookFrames, lookFrames } from "@/components/look-frames";
 import { getPublicCatalog } from "@/lib/server/boutique";
 import { getHouseNotes, listPublicLooks } from "@/lib/firebase/catalog";
 
@@ -14,38 +15,44 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+const RACK = 7;
+
 function Home() {
   const data = Route.useLoaderData();
   const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
   const notes = useQuery({ queryKey: ["house-notes"], queryFn: getHouseNotes });
   const house = mergeHouse(data.settings, notes.data);
   const pieces = firestore.data ?? [];
-  const heroSlides = pieces;
+  const rack = pieces.slice(0, RACK);
 
   return (
     <SiteShell settings={data.settings} overlay>
       <DrapeReveal house="BINTI DESIGNS">
-      <HeroSlider pieces={heroSlides} />
+      <HeroSlider pieces={rack} />
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24 md:px-10 md:py-28">
         <div className="mb-12 flex items-end justify-between gap-6 sm:mb-20">
           <h2 className="text-3xl sm:text-5xl md:text-7xl">Now on the rack</h2>
-          <Link to="/collection" className="eyebrow text-ink">
-            All looks
-          </Link>
+          {pieces.length > RACK ? (
+            <Link to="/collection" className="eyebrow text-ink">
+              All looks
+            </Link>
+          ) : null}
         </div>
-        {pieces.length ? (
-        <div className="space-y-20">
-          {pieces.slice(0, 4).map((piece, index) => (
+        {rack.length ? (
+        <div className="space-y-20 md:space-y-28">
+          {rack.map((piece, index) => (
             <motion.div
-              key={piece.slug + index}
+              key={piece.slug}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className={`grid items-end gap-8 md:grid-cols-2 ${index % 2 ? "md:[&>a]:order-2" : ""}`}
+              className={`grid items-end gap-8 md:grid-cols-2 ${index % 2 ? "md:[&>a]:order-2 md:[&>div:first-child]:order-2" : ""}`}
             >
-              <Link to="/piece/$slug" params={{ slug: piece.slug }} className="bg-paper-2">
-                <img src={piece.cover_url} alt={piece.title} className="w-full object-contain" />
-              </Link>
+              <LookFrames
+                slug={piece.slug}
+                alt={piece.title}
+                urls={lookFrames(piece.cover_url, piece.gallery)}
+              />
               <div className="pb-4">
                 <p className="eyebrow">{piece.sold_out ? "Reserved" : "Available"}</p>
                 <h3 className="display mt-4 text-3xl sm:text-4xl md:text-6xl">{piece.title}</h3>

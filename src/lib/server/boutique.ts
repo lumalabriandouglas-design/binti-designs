@@ -109,11 +109,19 @@ export const getPublicCatalog = createServerFn({ method: "GET" }).handler(
   async () => {
     if (useMemoryDb()) {
       const m = memory();
-      return {
-        pieces: await hydratePieces(m.pieces.filter((p) => p.status === "published")),
-        settings: m.settings,
-        journal: m.journal,
-      };
+      try {
+        return {
+          pieces: await hydratePieces(m.pieces.filter((p) => p.status === "published")),
+          settings: m.settings,
+          journal: m.journal,
+        };
+      } catch {
+        return {
+          pieces: m.pieces.filter((p) => p.status === "published"),
+          settings: m.settings,
+          journal: m.journal,
+        };
+      }
     }
     try {
       const sql = await getSql();

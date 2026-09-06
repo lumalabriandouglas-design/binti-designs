@@ -52,12 +52,17 @@ export function HeroSlider({ pieces }: { pieces: Slide[] }) {
   const [cached] = useState(readCache);
   const [index, setIndex] = useState(0);
   const [ready, setReady] = useState<Record<string, boolean>>({});
-  const incoming = pieces.filter((p) => p.cover_url).slice(0, 8);
+  const incoming = pieces.filter((p) => p.cover_url).slice(0, 7);
   const slides = incoming.length ? incoming : cached;
+  const coverKey = incoming.map((s) => s.cover_url).join("|");
 
   useEffect(() => {
     if (incoming.length) writeCache(incoming);
-  }, [incoming]);
+  }, [coverKey]);
+
+  useEffect(() => {
+    setIndex((current) => (slides.length ? current % slides.length : 0));
+  }, [slides.length]);
 
   useEffect(() => {
     if (!slides[0]?.cover_url) return;

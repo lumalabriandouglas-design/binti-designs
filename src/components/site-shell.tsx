@@ -14,7 +14,6 @@ const NAV = [
   { to: "/collection", label: "Collection" },
   { to: "/reels", label: "Reels" },
   { to: "/atelier", label: "House" },
-  { to: "/journal", label: "Notes" },
 ] as const;
 
 export function SiteShell({
@@ -52,37 +51,34 @@ export function SiteShell({
           float ? "bg-transparent" : "border-b border-line bg-paper/92 backdrop-blur-sm"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5 md:px-10">
+        <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-3 px-4 py-4 sm:px-6 sm:py-5 md:grid-cols-[1fr_auto_1fr] md:px-10">
           <Link to="/" className={`display text-xl tracking-tight sm:text-2xl md:text-3xl ${ink}`}>
             BINTI DESIGNS
           </Link>
-          <nav className="hidden items-center gap-8 text-[11px] tracking-[0.18em] uppercase md:flex">
+          <nav className="hidden items-center gap-10 md:flex" aria-label="House">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className={pathname.startsWith(item.to) ? ink : mute}
+                className={`nav-mark ${pathname.startsWith(item.to) ? `nav-mark-on ${ink}` : mute}`}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-          <div className={`flex items-center gap-5 ${ink}`}>
+          <div className={`flex items-center justify-end gap-5 ${ink}`}>
             {user && !houseAccount ? (
-              <Link to="/account" className={`text-[11px] tracking-[0.18em] uppercase ${ink}`}>
+              <Link to="/account" className={`nav-mark ${ink}`}>
                 Account
               </Link>
             ) : null}
             {user ? null : (
-              <Link
-                to="/login"
-                className={`text-[11px] tracking-[0.18em] uppercase ${ink}`}
-              >
-                Sign in
+              <Link to="/login" className={`hidden nav-mark sm:inline-flex ${mute}`}>
+                Enter
               </Link>
             )}
             <Link to="/bag" aria-label="Cart" className={`relative ${ink}`}>
-              <ShoppingBag className="h-5 w-5" strokeWidth={1.4} />
+              <ShoppingBag className="h-5 w-5" strokeWidth={1.25} />
               {count ? (
                 <span className="absolute -right-2 -top-2 min-w-4 text-center text-[0.6rem]">{count}</span>
               ) : null}
@@ -90,22 +86,16 @@ export function SiteShell({
           </div>
         </div>
         {float ? null : (
-        <nav className="flex gap-5 overflow-x-auto border-t border-line px-4 py-3 text-[0.65rem] tracking-[0.22em] uppercase md:hidden">
+        <nav className="flex justify-center gap-8 border-t border-line px-4 py-3 md:hidden" aria-label="House">
           {NAV.map((item) => (
-            <Link key={item.to} to={item.to} className="shrink-0 text-mute">
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`nav-mark ${pathname.startsWith(item.to) ? `nav-mark-on text-ink` : "text-mute"}`}
+            >
               {item.label}
             </Link>
           ))}
-          {user && !houseAccount ? (
-            <Link to="/account" className="shrink-0 text-mute">
-              Account
-            </Link>
-          ) : null}
-          {user ? null : (
-            <Link to="/login" className="shrink-0 text-mute">
-              Sign in
-            </Link>
-          )}
         </nav>
         )}
       </header>
@@ -115,6 +105,9 @@ export function SiteShell({
           <p className="text-3xl sm:text-4xl md:text-5xl">BINTI DESIGNS</p>
           <p className="text-sm leading-relaxed text-mute">{house.tagline}</p>
           <div className="text-sm leading-7 text-mute">
+            <Link to="/journal" className="text-ink">
+              Notes
+            </Link>
             {house.instagram ? (
               <a
                 href={house.instagram}

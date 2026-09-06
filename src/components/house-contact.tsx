@@ -40,7 +40,9 @@ export type PieceHint = { title: string; subtitle?: string; slug?: string };
 export function pieceMessage(piece?: PieceHint) {
   if (!piece?.title) return "Hello BINTI DESIGNS —";
   const name = [piece.title, piece.subtitle].filter(Boolean).join(" ");
-  const url = piece.slug ? ` https://binti-designs.vercel.app/piece/${piece.slug}` : "";
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "https://binti-designs.vercel.app";
+  const url = piece.slug ? ` ${origin}/piece/${piece.slug}` : "";
   return `Hello BINTI DESIGNS — I am writing about ${name}.${url}`;
 }
 

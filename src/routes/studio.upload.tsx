@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { getStudioData, saveJournal, savePiece, type Piece } from "@/lib/server/boutique";
+import { getStudioData, savePiece, type Piece } from "@/lib/server/boutique";
 import { getStudioToken } from "@/lib/bag";
 import { MAX_STILLS, parseGallery } from "@/lib/media";
 import { resolveMedia } from "@/lib/server/upload";
@@ -45,7 +45,6 @@ function UploadPage() {
   return (
     <div className="mx-auto grid max-w-6xl gap-12 px-5 py-10 lg:grid-cols-2">
       <LookForm token={token} existing={existing} onSaved={() => nav({ to: "/studio" })} />
-      <JournalForm token={token} />
     </div>
   );
 }
@@ -308,95 +307,3 @@ function LookForm({
   );
 }
 
-function JournalForm({ token }: { token: string }) {
-  const [title, setTitle] = useState("");
-  const [caption, setCaption] = useState("");
-  const [media, setMedia] = useState("");
-  const [type, setType] = useState<"image" | "video">("image");
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState("");
-
-  const save = useMutation({
-    mutationFn: () =>
-      saveJournal({
-        data: { token, title, caption, media_url: media, media_type: type },
-      }),
-    onSuccess: () => {
-      setTitle("");
-      setCaption("");
-      setMedia("");
-    },
-    onError: (e) => setErr(e.message),
-  });
-
-  return (
-    <form
-      className="space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!media) {
-          setErr("Add media first.");
-          return;
-        }
-        save.mutate();
-      }}
-    >
-      <p className="text-[0.68rem] tracking-[0.28em] uppercase text-[#f0d24b]">
-        Journal
-      </p>
-      <h2 className="display text-4xl text-paper">A note, a film</h2>
-      <label className="block border border-dashed border-white/20 px-4 py-8 text-center text-sm text-paper/60">
-        Image or short video
-        <input
-          type="file"
-          accept="image/*,video/*"
-          className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setErr("");
-            try {
-              if (file.type.startsWith("video")) {
-                setType("video");
-                setBusy("Compressing film…");
-                setMedia(await uploadFilm(token, file));
-              } else {
-                setType("image");
-                setBusy("Compressing still…");
-                const stored = await uploadStill(token, file);
-                setMedia(stored.display);
-              }
-            } catch (error) {
-              setErr(error instanceof Error ? error.message : "Could not read file.");
-            } finally {
-              setBusy("");
-            }
-          }}
-        />
-      </label>
-      {media && type === "image" ? (
-        <img src={media} alt="" className="max-h-72 w-full object-contain bg-white/5" />
-      ) : null}
-      <input
-        placeholder="Title — optional"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full border border-white/15 bg-transparent px-3 py-3 text-sm text-paper outline-none"
-      />
-      <textarea
-        placeholder="Caption"
-        value={caption}
-        onChange={(e) => setCaption(e.target.value)}
-        className="h-24 w-full border border-white/15 bg-transparent px-3 py-3 text-sm text-paper outline-none"
-      />
-      {busy ? <p className="text-sm text-[#f0d24b]">{busy}</p> : null}
-      {err ? <p className="text-sm text-[#f0d24b]">{err}</p> : null}
-      <button
-        type="submit"
-        className="border border-[#f0d24b] px-6 py-3 text-[0.7rem] tracking-[0.2em] uppercase text-[#f0d24b]"
-      >
-        Hang this look
-      </button>
-    </form>
-  );
-}

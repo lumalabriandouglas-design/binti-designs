@@ -51,6 +51,7 @@ export async function compressImageFile(file: File): Promise<string> {
   return blobToDataUrl(blob);
 }
 
+/** Lighter copy for storage. The original file is uploaded separately as master and is what the house plays. */
 export async function compressVideoFile(file: File): Promise<Blob> {
   if (typeof window === "undefined") return file;
   if (file.size < 2.5 * 1024 * 1024) return file;

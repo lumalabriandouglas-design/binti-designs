@@ -445,6 +445,7 @@ function LookForm({
   const [cover, setCover] = useState(existing?.cover_url ?? "");
   const [gallery, setGallery] = useState<string[]>(existing?.gallery ?? []);
   const [video, setVideo] = useState(existing?.video_url ?? "");
+  const [videoDisplay, setVideoDisplay] = useState(existing?.video_display ?? "");
   const [soldOut, setSold] = useState(existing?.sold_out ?? false);
   const [hidden, setHidden] = useState(existing?.hidden ?? false);
   const [busy, setBusy] = useState("");
@@ -508,6 +509,7 @@ function LookForm({
         cover_url: cover,
         gallery,
         video_url: video,
+        video_display: videoDisplay,
         sold_out: soldOut,
         hidden,
         slug: existing?.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
@@ -727,13 +729,13 @@ function LookForm({
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                setBusy("Sending film to the archive…");
+                setBusy("Keeping the original film and a lighter copy…");
                 try {
-                  const url = await uploadFilm(token || "house", file);
-                  setVideo(url);
-                } catch {
-                  const blob = await compressVideoFile(file);
-                  setVideo(await blobToDataUrl(blob));
+                  const film = await uploadFilm(token || "house", file);
+                  setVideo(film.master);
+                  setVideoDisplay(film.display);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Could not hang the film.");
                 }
                 setBusy("");
                 e.target.value = "";
@@ -1161,7 +1163,9 @@ function FilmDesk({
                     : new File([compact], file.name.replace(/\.[^.]+$/, ".webm"), {
                         type: compact.type || "video/webm",
                       });
-                setVideo(await uploadFilm(token, named));
+                const film = await uploadFilm(token, named);
+                setVideo(film.master);
+                setCover((now) => now || film.display);
               } catch (error) {
                 setErr(error instanceof Error ? error.message : "Could not read the film.");
               } finally {

@@ -167,7 +167,8 @@ function LookForm({
     setErr("");
     setBusy("Compressing film…");
     try {
-      setVideo(await uploadFilm(token, file));
+      const film = await uploadFilm(token, file);
+      setVideo(film.master);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Video failed.");
     } finally {

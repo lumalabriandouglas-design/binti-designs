@@ -98,7 +98,25 @@ export async function uploadStill(token: string, file: File): Promise<StoredStil
   return { thumb, display, master, preview };
 }
 
-export async function uploadFilm(token: string, file: File) {
-  const compressed = await compressVideoFile(file);
-  return putBlob(token, file.name || "look.webm", compressed, "video");
+export async function uploadFilm(token: string, file: File): Promise<{ display: string; master: string }> {
+  if (file.size > 80 * 1024 * 1024) {
+    throw new Error("That film is over 80MB. Trim it, then hang it again.");
+  }
+  const masterName = file.name || "look-master.mp4";
+  const master = await putBlob(token, masterName, file, "video");
+  let display = master;
+  try {
+    const compact = await compressVideoFile(file);
+    if (compact.size < file.size) {
+      display = await putBlob(
+        token,
+        masterName.replace(/\.[^.]+$/, "") + "-display.webm",
+        compact,
+        "video",
+      );
+    }
+  } catch {
+    display = master;
+  }
+  return { display, master };
 }

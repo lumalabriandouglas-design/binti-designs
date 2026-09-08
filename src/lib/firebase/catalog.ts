@@ -26,6 +26,7 @@ export type Look = {
   cover_url: string;
   gallery: string[];
   video_url: string;
+  video_display: string;
   sold_out: boolean;
   hidden: boolean;
   created_at: string;
@@ -91,6 +92,7 @@ function asLook(id: string, data: DocumentData): Look {
     cover_url: asMediaUrl(data.cover_url) || String(data.cover_url ?? ""),
     gallery: asGallery(data.gallery),
     video_url: asMediaUrl(data.video_url) || String(data.video_url ?? ""),
+    video_display: asMediaUrl(data.video_display) || String(data.video_display ?? ""),
     sold_out: Boolean(data.sold_out),
     hidden: Boolean(data.hidden),
     created_at: String(data.created_at ?? ""),
@@ -101,7 +103,7 @@ async function resolveRefs(looks: Look[], keys: Array<"cover" | "gallery" | "vid
   const refs = looks.flatMap((look) => {
     const urls: string[] = [];
     if (keys.includes("cover")) urls.push(look.cover_url);
-    if (keys.includes("video")) urls.push(look.video_url);
+    if (keys.includes("video")) urls.push(look.video_url, look.video_display);
     if (keys.includes("gallery")) urls.push(...look.gallery);
     return urls.filter((url) => url.startsWith("r2:"));
   });
@@ -112,6 +114,7 @@ async function resolveRefs(looks: Look[], keys: Array<"cover" | "gallery" | "vid
       ...look,
       cover_url: map[look.cover_url] || look.cover_url,
       video_url: look.video_url ? map[look.video_url] || look.video_url : look.video_url,
+      video_display: look.video_display ? map[look.video_display] || look.video_display : look.video_display,
       gallery: look.gallery.map((url) => map[url] || url),
     }));
   } catch {
@@ -177,6 +180,7 @@ export async function saveLook(look: Partial<Look> & { title: string; cover_url:
     cover_url: look.cover_url,
     gallery: look.gallery ?? [],
     video_url: look.video_url ?? "",
+    video_display: look.video_display ?? "",
     sold_out: Boolean(look.sold_out),
     hidden: Boolean(look.hidden),
     created_at: look.created_at || new Date().toISOString(),

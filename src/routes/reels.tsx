@@ -1,3 +1,4 @@
+import { Images, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -108,7 +109,13 @@ function bagFromReel(item: ReelItem) {
 function ReelCard({ item }: { item: ReelItem }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
+  const [bagged, setBagged] = useState(false);
   const add = useBag((s) => s.add);
+
+  useEffect(() => {
+    const node = videoRef.current;
+    if (node) node.muted = muted;
+  }, [muted]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -142,7 +149,58 @@ function ReelCard({ item }: { item: ReelItem }) {
         onClick={() => setMuted((on) => !on)}
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#11100e] via-transparent to-[#11100e]/20" />
-      <div className="relative z-10 space-y-3 px-5 pb-8">
+      <div className="pointer-events-auto absolute bottom-28 right-4 z-10 flex flex-col items-center gap-5">
+        <button
+          type="button"
+          aria-label={muted ? "Turn sound on" : "Mute"}
+          className="grid size-12 place-items-center rounded-full border border-[#f6f1ea]/25 bg-[#11100e]/50"
+          onClick={() => setMuted((on) => !on)}
+        >
+          {muted ? <VolumeX className="h-5 w-5" strokeWidth={1.5} /> : <Volume2 className="h-5 w-5" strokeWidth={1.5} />}
+        </button>
+        {item.slug ? (
+          <Link
+            to="/piece/$slug"
+            params={{ slug: item.slug }}
+            aria-label="Open the stills"
+            className="grid size-12 place-items-center rounded-full border border-[#f6f1ea]/25 bg-[#11100e]/50"
+          >
+            <Images className="h-5 w-5" strokeWidth={1.5} />
+          </Link>
+        ) : null}
+        {item.slug && !item.sold_out ? (
+          <>
+            <HouseSignedIn>
+              <button
+                type="button"
+                aria-label="Add to bag"
+                className="grid size-12 place-items-center rounded-full border border-[#f6f1ea]/25 bg-[#11100e]/50"
+                onClick={() => {
+                  add(bagFromReel(item));
+                  setBagged(true);
+                }}
+              >
+                <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
+              </button>
+            </HouseSignedIn>
+            <HouseSignedOut>
+              <Link
+                to="/login"
+                aria-label="Sign in to bag"
+                className="grid size-12 place-items-center rounded-full border border-[#f6f1ea]/25 bg-[#11100e]/50"
+                onClick={() => {
+                  stashPendingLook(bagFromReel(item));
+                  rememberNext("/reels");
+                }}
+              >
+                <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
+              </Link>
+            </HouseSignedOut>
+          </>
+        ) : null}
+        {bagged ? <span className="text-[9px] uppercase tracking-[0.16em] text-gold">In bag</span> : null}
+      </div>
+      <div className="relative z-10 space-y-3 px-5 pb-8 pr-20">
         <p className="text-[11px] uppercase tracking-[0.22em] text-gold">
           {item.sold_out ? "Reserved" : item.slug ? item.category || "Look" : "Film"}
         </p>
@@ -153,49 +211,6 @@ function ReelCard({ item }: { item: ReelItem }) {
             {item.sold_out ? "This look has left the rack." : formatMoney(item.price_cents, item.currency)}
           </p>
         ) : null}
-        <div className="pointer-events-auto flex flex-wrap gap-2 pt-1">
-          {item.slug ? (
-            <Link
-              to="/piece/$slug"
-              params={{ slug: item.slug }}
-              className="bg-[#f6f1ea] px-4 py-3 text-[11px] tracking-[0.18em] uppercase text-[#11100e]"
-            >
-              The stills
-            </Link>
-          ) : null}
-          {item.slug && !item.sold_out ? (
-            <>
-              <HouseSignedIn>
-                <button
-                  type="button"
-                  className="border border-[#f6f1ea]/40 px-4 py-3 text-[11px] tracking-[0.18em] uppercase"
-                  onClick={() => add(bagFromReel(item))}
-                >
-                  Add to bag
-                </button>
-              </HouseSignedIn>
-              <HouseSignedOut>
-                <Link
-                  to="/login"
-                  className="border border-[#f6f1ea]/40 px-4 py-3 text-[11px] tracking-[0.18em] uppercase"
-                  onClick={() => {
-                    stashPendingLook(bagFromReel(item));
-                    rememberNext("/reels");
-                  }}
-                >
-                  Sign in to bag
-                </Link>
-              </HouseSignedOut>
-            </>
-          ) : null}
-          <button
-            type="button"
-            className="border border-[#f6f1ea]/40 px-4 py-3 text-[11px] tracking-[0.18em] uppercase"
-            onClick={() => setMuted((on) => !on)}
-          >
-            {muted ? "Sound" : "Mute"}
-          </button>
-        </div>
       </div>
     </article>
   );

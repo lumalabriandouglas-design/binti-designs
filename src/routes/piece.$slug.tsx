@@ -46,7 +46,8 @@ function PiecePage() {
         category: firestorePiece.category,
         cover_url: firestorePiece.cover_url,
         gallery: JSON.stringify(firestorePiece.gallery.map((url) => ({ thumb: url, display: url, master: url }))),
-        video_url: firestorePiece.video_url,
+        video_url: firestorePiece.video_display || firestorePiece.video_url,
+        video_master: firestorePiece.video_url,
         caption: firestorePiece.caption,
         status: "published",
         publish_to_drape: false,
@@ -83,7 +84,7 @@ function PiecePage() {
   );
 }
 
-function PieceView({ piece }: { piece: Piece }) {
+function PieceView({ piece }: { piece: Piece & { video_master?: string } }) {
   const add = useBag((s) => s.add);
   const nav = useNavigate();
   const { user } = useHouseUser();
@@ -146,11 +147,9 @@ function PieceView({ piece }: { piece: Piece }) {
           </div>
         ) : null}
         {piece.video_url ? (
-          <video
-            className="mt-3 w-full"
-            controls
-            playsInline
+          <FilmPlay
             src={piece.video_url}
+            master={piece.video_master}
             poster={piece.cover_url}
           />
         ) : null}
@@ -226,6 +225,34 @@ function PieceView({ piece }: { piece: Piece }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function FilmPlay({
+  src,
+  master,
+  poster,
+}: {
+  src: string;
+  master?: string;
+  poster?: string;
+}) {
+  const light = src;
+  const full = master && master !== src ? master : "";
+  const [play, setPlay] = useState(light);
+  return (
+    <div className="mt-3">
+      <video className="w-full" controls playsInline preload="metadata" src={play} poster={poster} />
+      {full ? (
+        <button
+          type="button"
+          className="mt-2 text-[10px] uppercase tracking-[0.16em] text-mute"
+          onClick={() => setPlay((now) => (now === full ? light : full))}
+        >
+          {play === full ? "Lighter copy" : "Full quality"}
+        </button>
+      ) : null}
+    </div>
   );
 }
 

@@ -34,7 +34,7 @@ function asLookReel(look: Look): ReelItem {
     title: look.title,
     subtitle: look.subtitle,
     caption: look.caption,
-    video_url: look.video_url,
+    video_url: look.video_display || look.video_url,
     cover_url: look.cover_url,
     slug: look.slug,
     sold_out: look.sold_out,

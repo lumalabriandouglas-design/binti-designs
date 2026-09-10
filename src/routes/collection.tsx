@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { SiteShell } from "@/components/site-shell";
+import { LookFrames, lookFrames } from "@/components/look-frames";
 import { getPublicCatalog } from "@/lib/server/boutique";
 import { listPublicLooks } from "@/lib/firebase/catalog";
 import { formatMoney } from "@/lib/utils";
@@ -43,27 +44,23 @@ function Collection() {
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className={FRAMES[index % FRAMES.length]}
             >
-              <Link to="/piece/$slug" params={{ slug: piece.slug }}>
-                <div className="bg-paper-2">
-                  <img
-                    src={piece.cover_url}
-                    alt={piece.title}
-                    className="w-full object-contain"
-                  />
+              <LookFrames
+                slug={piece.slug}
+                alt={piece.title}
+                urls={lookFrames(piece.cover_url, piece.gallery)}
+              />
+              <Link to="/piece/$slug" params={{ slug: piece.slug }} className="mt-7 flex items-baseline justify-between gap-6">
+                <div>
+                  <h2 className="text-3xl md:text-4xl">{piece.title}</h2>
+                  <p className="mt-2 text-sm text-mute">{piece.subtitle}</p>
                 </div>
-                <div className="mt-7 flex items-baseline justify-between gap-6">
-                  <div>
-                    <h2 className="text-3xl md:text-4xl">{piece.title}</h2>
-                    <p className="mt-2 text-sm text-mute">{piece.subtitle}</p>
-                  </div>
-                  <p className="text-sm text-mute">
-                    {"sold_out" in piece && piece.sold_out
-                      ? "Reserved"
-                      : piece.price_cents
-                        ? formatMoney(piece.price_cents, piece.currency)
-                        : "Inquiry"}
-                  </p>
-                </div>
+                <p className="text-sm text-mute">
+                  {"sold_out" in piece && piece.sold_out
+                    ? "Reserved"
+                    : piece.price_cents
+                      ? formatMoney(piece.price_cents, piece.currency)
+                      : "Inquiry"}
+                </p>
               </Link>
             </motion.div>
           )) : (

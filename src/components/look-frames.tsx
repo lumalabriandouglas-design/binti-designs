@@ -16,15 +16,20 @@ export function LookFrames({
 }) {
   const frames = lookFrames("", urls);
   const [index, setIndex] = useState(0);
+  const [held, setHeld] = useState(false);
 
   useEffect(() => {
     setIndex(0);
-    if (frames.length < 2) return;
+    setHeld(false);
+  }, [frames.join("|")]);
+
+  useEffect(() => {
+    if (held || frames.length < 2) return;
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % frames.length);
     }, 2600);
     return () => window.clearInterval(timer);
-  }, [frames.join("|")]);
+  }, [held, frames.join("|")]);
 
   useEffect(() => {
     frames.forEach((url) => {
@@ -47,23 +52,36 @@ export function LookFrames({
           } ${i === index ? "opacity-100" : "pointer-events-none opacity-0"}`}
         />
       ))}
+    </div>
+  );
+
+  return (
+    <div>
+      {slug ? (
+        <Link to="/piece/$slug" params={{ slug }} className="block">
+          {image}
+        </Link>
+      ) : (
+        image
+      )}
       {frames.length > 1 ? (
-        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
           {frames.map((url, i) => (
-            <span
+            <button
               key={url}
-              className={`block h-1 w-4 ${i === index ? "bg-ink" : "bg-ink/25"}`}
-            />
+              type="button"
+              aria-label={`Look ${i + 1}`}
+              className={i === index ? "ring-1 ring-ink" : "opacity-70"}
+              onClick={() => {
+                setIndex(i);
+                setHeld(true);
+              }}
+            >
+              <img src={url} alt="" className="h-20 w-full bg-paper object-contain" />
+            </button>
           ))}
         </div>
       ) : null}
     </div>
-  );
-
-  if (!slug) return image;
-  return (
-    <Link to="/piece/$slug" params={{ slug }} className="block">
-      {image}
-    </Link>
   );
 }

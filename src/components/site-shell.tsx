@@ -162,11 +162,15 @@ function AccountMark({
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function onDoc(event: MouseEvent) {
+    function onDoc(event: Event) {
       if (!box.current?.contains(event.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    document.addEventListener("touchstart", onDoc);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("touchstart", onDoc);
+    };
   }, []);
 
   return (
@@ -175,8 +179,8 @@ function AccountMark({
         type="button"
         aria-label="Account"
         aria-expanded={open}
-        className={`grid size-8 place-items-center rounded-full border text-[0.7rem] tracking-[0.08em] ${
-          float ? "border-[#f6f1ea]/50" : "border-line"
+        className={`grid size-9 place-items-center rounded-full text-[0.75rem] tracking-[0.08em] ${
+          float ? "bg-[#f6f1ea] text-[#14110e]" : "bg-ink text-paper"
         }`}
         onClick={() => setOpen((value) => !value)}
       >

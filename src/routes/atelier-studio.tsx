@@ -244,8 +244,27 @@ function Dashboard({ email }: { email: string }) {
         </div>
       </aside>
 
-      <div className="px-4 py-6 sm:px-8 sm:py-10">
-        <div className="mb-8 flex gap-2 overflow-x-auto pb-2 lg:hidden">
+      <header className="bg-[#14110e] px-4 pb-4 pt-5 text-[#f6f1ea] lg:hidden">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-gold">Atelier</p>
+        <div className="mt-2 flex items-start justify-between gap-3">
+          <div>
+            <p className="display text-3xl">BINTI</p>
+            <p className="mt-1 text-sm text-[#f6f1ea]/70">Welcome back, Natasha.</p>
+          </div>
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gold text-sm text-[#14110e]">
+            N
+          </span>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[10px] uppercase tracking-[0.18em] text-[#f6f1ea]/70">
+          <Link to="/" className="text-gold">
+            The house
+          </Link>
+          <Link to="/collection">Showroom</Link>
+          <button type="button" onClick={() => void houseSignOut()}>
+            Close the floor
+          </button>
+        </div>
+        <nav className="mt-5 grid grid-cols-3 gap-2" aria-label="Studio">
           {rooms.map((room) => (
             <button
               key={room.id}
@@ -254,14 +273,17 @@ function Dashboard({ email }: { email: string }) {
                 if (room.id === "table") setEditing(null);
                 setTab(room.id);
               }}
-              className={`shrink-0 px-4 py-2 text-[10px] tracking-[0.16em] uppercase ${
-                tab === room.id ? "bg-[#14110e] text-gold" : "border border-line text-mute"
+              className={`px-2 py-3 text-[10px] tracking-[0.14em] uppercase ${
+                tab === room.id ? "bg-gold text-[#14110e]" : "border border-[#f6f1ea]/20 text-[#f6f1ea]/80"
               }`}
             >
-              {room.label}
+              {room.id === "rack" ? "Rack" : room.label}
             </button>
           ))}
-        </div>
+        </nav>
+      </header>
+
+      <div className="px-4 py-6 sm:px-8 sm:py-10">
         {tab === "rack" ? (
           <Rack
             looks={rack}

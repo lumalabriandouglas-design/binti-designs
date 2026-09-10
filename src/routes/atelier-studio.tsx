@@ -42,7 +42,7 @@ import { formatMoney } from "@/lib/utils";
 import { writeHouseBook, readHouseBook } from "@/lib/house-book";
 import { setStudioToken } from "@/lib/bag";
 import { ShareLink } from "@/components/share-link";
-import { HOUSE_BIO_LINE, liveOrigin, publicUrl } from "@/lib/site-url";
+import { HOUSE_BIO_LINE, liveOrigin } from "@/lib/site-url";
 
 export const Route = createFileRoute("/atelier-studio")({ component: AtelierStudio });
 
@@ -359,7 +359,26 @@ function Rack({
                       : "Inquiry"}
               </p>
               <div className="mt-4 flex flex-wrap gap-2 text-[0.62rem] tracking-[0.16em] uppercase">
-                <button type="button" className="border border-line px-3 py-2" onClick={() => onEdit(look)}>
+                <button
+                  type="button"
+                  className="border border-line px-3 py-2"
+                  onClick={async () => {
+                    const url = `${liveOrigin()}/piece/${look.slug}`;
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      window.alert("Look link copied.");
+                    } catch {
+                      window.prompt("Copy this look link", url);
+                    }
+                  }}
+                >
+                  Copy look
+                </button>
+                <button
+                  type="button"
+                  className="border border-line px-3 py-2"
+                  onClick={() => onEdit(look)}
+                >
                   Edit
                 </button>
                 <button
@@ -919,21 +938,16 @@ function HouseBook({
         WhatsApp opens chat. Call dials. Pay copies into Mobile Money.
       </p>
       <div className="border border-line bg-paper-2 p-5">
-        <p className="text-[11px] uppercase tracking-[0.22em] text-mute">Instagram & TikTok bio</p>
+        <p className="text-[11px] uppercase tracking-[0.22em] text-mute">The floor</p>
         <p className="mt-3 text-sm leading-relaxed text-mute">
-          Paste this on her link-in-bio. It opens a quiet page with Collection, Reels, and the house.
+          This is the link for Instagram, TikTok, and anyone who should walk in through the drapes.
         </p>
         <div className="mt-4">
-          <ShareLink
-            url={`${liveOrigin()}/bio`}
-            caption={`${HOUSE_BIO_LINE}\n${publicUrl("/bio")}`}
-          />
-        </div>
-        <p className="mt-6 text-[11px] uppercase tracking-[0.22em] text-mute">The floor</p>
-        <p className="mt-2 text-sm text-mute">The cinematic house, drapes and all.</p>
-        <div className="mt-3">
           <ShareLink url={liveOrigin()} caption={HOUSE_BIO_LINE} />
         </div>
+        <p className="mt-5 text-sm text-mute">
+          A single look has its own link on the rack and on the piece. Copy that when she wants to send one design.
+        </p>
       </div>
       <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
         <span className="flex items-center gap-2">

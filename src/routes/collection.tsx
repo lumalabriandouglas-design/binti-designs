@@ -24,18 +24,23 @@ const FRAMES = [
 function Collection() {
   const data = Route.useLoaderData();
   const firestore = useQuery({ queryKey: ["looks-public"], queryFn: listPublicLooks });
-  const pieces = firestore.isFetched ? (firestore.data ?? []) : [];
+  const pieces = firestore.data ?? [];
+  const waiting = firestore.isPending || firestore.isFetching && !pieces.length;
 
   return (
     <SiteShell settings={data.settings}>
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24 md:px-10 md:py-32">
-        <p className="eyebrow">Showroom</p>
+        <Link to="/" className="eyebrow text-ink">
+          Showroom
+        </Link>
         <h1 className="mt-6 max-w-3xl text-4xl sm:text-6xl md:text-8xl">Collection</h1>
         <p className="mt-8 max-w-md text-sm leading-relaxed text-mute">
           Looks as worn. Space left around the garment so the cut can speak.
         </p>
         <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-16 sm:mt-24 md:grid-cols-12 md:gap-y-8">
-          {pieces.length ? pieces.map((piece, index) => (
+          {waiting ? (
+            <p className="col-span-full text-sm text-mute">Dressing the rack…</p>
+          ) : pieces.length ? pieces.map((piece, index) => (
             <motion.div
               key={piece.slug + index}
               initial={{ opacity: 0, y: 20 }}

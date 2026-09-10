@@ -15,6 +15,8 @@ import { listPublicLooks, getHouseNotes, hydrateLook } from "@/lib/firebase/cata
 import { HouseContact, mergeHouse } from "@/components/house-contact";
 import { HouseSignedIn, HouseSignedOut, useHouseUser } from "@/lib/firebase/session";
 import { rememberNext, stashPendingLook, toggleSavedLook } from "@/lib/client-closet";
+import { ShareLink } from "@/components/share-link";
+import { liveOrigin } from "@/lib/site-url";
 
 export const Route = createFileRoute("/piece/$slug")({ component: PiecePage });
 
@@ -219,6 +221,16 @@ function PieceView({ piece }: { piece: Piece & { video_master?: string } }) {
           </HouseSignedOut>
         </div>
         {note ? <p className="mt-4 text-sm text-mute">{note}</p> : null}
+        <div className="mt-8">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-mute">Share this look</p>
+          <div className="mt-3">
+            <ShareLink
+              url={`${liveOrigin()}/piece/${piece.slug}`}
+              label={`${piece.title} — BINTI DESIGNS`}
+              caption={`${piece.title} — BINTI DESIGNS`}
+            />
+          </div>
+        </div>
         <PieceContact piece={piece} />
         <div className="mt-14 border-t border-line pt-10">
           <CallbackForm pieceSlug={piece.slug} />

@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+Allow: /bio
+Allow: /og.jpg
 Disallow: /atelier-studio
 Disallow: /studio
 Disallow: /studio/upload

@@ -14,6 +14,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as AtelierStudioRouteImport } from './routes/atelier-studio'
 import { Route as BagRouteImport } from './routes/bag'
+import { Route as BioRouteImport } from './routes/bio'
 import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as LoginRouteImport } from './routes/login'
@@ -48,6 +49,11 @@ const AtelierStudioRoute = AtelierStudioRouteImport.update({
 const BagRoute = BagRouteImport.update({
   id: '/bag',
   path: '/bag',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BioRoute = BioRouteImport.update({
+  id: '/bio',
+  path: '/bio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollectionRoute = CollectionRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/atelier': typeof AtelierRoute
   '/atelier-studio': typeof AtelierStudioRoute
   '/bag': typeof BagRoute
+  '/bio': typeof BioRoute
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/atelier': typeof AtelierRoute
   '/atelier-studio': typeof AtelierStudioRoute
   '/bag': typeof BagRoute
+  '/bio': typeof BioRoute
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/atelier': typeof AtelierRoute
   '/atelier-studio': typeof AtelierStudioRoute
   '/bag': typeof BagRoute
+  '/bio': typeof BioRoute
   '/collection': typeof CollectionRoute
   '/journal': typeof JournalRoute
   '/login': typeof LoginRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/atelier'
     | '/atelier-studio'
     | '/bag'
+    | '/bio'
     | '/collection'
     | '/journal'
     | '/login'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/atelier'
     | '/atelier-studio'
     | '/bag'
+    | '/bio'
     | '/collection'
     | '/journal'
     | '/login'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/atelier'
     | '/atelier-studio'
     | '/bag'
+    | '/bio'
     | '/collection'
     | '/journal'
     | '/login'
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   AtelierRoute: typeof AtelierRoute
   AtelierStudioRoute: typeof AtelierStudioRoute
   BagRoute: typeof BagRoute
+  BioRoute: typeof BioRoute
   CollectionRoute: typeof CollectionRoute
   JournalRoute: typeof JournalRoute
   LoginRoute: typeof LoginRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       path: '/bag'
       fullPath: '/bag'
       preLoaderRoute: typeof BagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bio': {
+      id: '/bio'
+      path: '/bio'
+      fullPath: '/bio'
+      preLoaderRoute: typeof BioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/collection': {
@@ -352,6 +372,7 @@ const rootRouteChildren: RootRouteChildren = {
   AtelierRoute: AtelierRoute,
   AtelierStudioRoute: AtelierStudioRoute,
   BagRoute: BagRoute,
+  BioRoute: BioRoute,
   CollectionRoute: CollectionRoute,
   JournalRoute: JournalRoute,
   LoginRoute: LoginRoute,

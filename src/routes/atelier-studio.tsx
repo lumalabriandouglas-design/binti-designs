@@ -41,6 +41,8 @@ import {
 import { formatMoney } from "@/lib/utils";
 import { writeHouseBook, readHouseBook } from "@/lib/house-book";
 import { setStudioToken } from "@/lib/bag";
+import { ShareLink } from "@/components/share-link";
+import { HOUSE_BIO_LINE, liveOrigin, publicUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/atelier-studio")({ component: AtelierStudio });
 
@@ -916,6 +918,23 @@ function HouseBook({
       <p className="text-sm leading-relaxed text-mute">
         WhatsApp opens chat. Call dials. Pay copies into Mobile Money.
       </p>
+      <div className="border border-line bg-paper-2 p-5">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-mute">Instagram & TikTok bio</p>
+        <p className="mt-3 text-sm leading-relaxed text-mute">
+          Paste this on her link-in-bio. It opens a quiet page with Collection, Reels, and the house.
+        </p>
+        <div className="mt-4">
+          <ShareLink
+            url={`${liveOrigin()}/bio`}
+            caption={`${HOUSE_BIO_LINE}\n${publicUrl("/bio")}`}
+          />
+        </div>
+        <p className="mt-6 text-[11px] uppercase tracking-[0.22em] text-mute">The floor</p>
+        <p className="mt-2 text-sm text-mute">The cinematic house, drapes and all.</p>
+        <div className="mt-3">
+          <ShareLink url={liveOrigin()} caption={HOUSE_BIO_LINE} />
+        </div>
+      </div>
       <label className="block text-[0.62rem] uppercase tracking-[0.16em] text-mute">
         <span className="flex items-center gap-2">
           <WhatsAppMark className="h-3.5 w-3.5 text-[#25D366]" />

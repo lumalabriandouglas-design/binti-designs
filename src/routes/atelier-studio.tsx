@@ -256,10 +256,10 @@ function Dashboard({ email }: { email: string }) {
           </span>
         </div>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[10px] uppercase tracking-[0.18em] text-[#f6f1ea]/70">
+          <Link to="/atelier">The house</Link>
           <Link to="/" className="text-gold">
-            The house
+            Showroom
           </Link>
-          <Link to="/collection">Showroom</Link>
           <button type="button" onClick={() => void houseSignOut()}>
             Close the floor
           </button>

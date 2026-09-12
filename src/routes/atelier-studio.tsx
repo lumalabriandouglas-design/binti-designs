@@ -75,7 +75,67 @@ function AtelierStudio() {
 
   if (!user) return <StudioDoor denied={denied} setDenied={setDenied} />;
 
-  return <Dashboard email={user.primaryEmail || HOUSE_EMAIL} />;
+  return (
+    <StudioHomeDrape>
+      <Dashboard email={user.primaryEmail || HOUSE_EMAIL} />
+    </StudioHomeDrape>
+  );
+}
+
+function StudioHomeDrape({ children }: { children: React.ReactNode }) {
+  const [phase, setPhase] = useState<"closed" | "opening" | "open">("open");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.localStorage.getItem("binti-natasha-home")) {
+      setPhase("open");
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      window.localStorage.setItem("binti-natasha-home", "1");
+      setPhase("open");
+      return;
+    }
+    setPhase("closed");
+    const start = window.setTimeout(() => setPhase("opening"), 700);
+    const done = window.setTimeout(() => {
+      setPhase("open");
+      window.localStorage.setItem("binti-natasha-home", "1");
+    }, 3400);
+    return () => {
+      window.clearTimeout(start);
+      window.clearTimeout(done);
+    };
+  }, []);
+
+  const parted = phase !== "closed";
+
+  return (
+    <div className="relative">
+      {children}
+      {phase !== "open" ? (
+        <div className="pointer-events-none fixed inset-0 z-[80]">
+          <div className={`drape drape-left ${parted ? "drape-open-left" : ""}`} aria-hidden />
+          <div className={`drape drape-right ${parted ? "drape-open-right" : ""}`} aria-hidden />
+          <div
+            className={`absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center transition-opacity duration-700 ${
+              parted ? "opacity-0" : "opacity-100"
+            }`}
+          >
+            <BananaMark className="mb-6 h-8 w-8" />
+            <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-gold">For Natasha only</p>
+            <h1 className="display mt-4 text-4xl text-[#f6f1ea] md:text-6xl">Welcome home.</h1>
+            <p className="mt-3 font-[family-name:var(--font-display)] text-2xl italic text-[#f6f1ea]/80">
+              Your studio
+            </p>
+            <div className="mt-10">
+              <MinionPeek />
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function QuietFrame({ children }: { children: React.ReactNode }) {
